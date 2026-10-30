@@ -3,31 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Birthday Countdown & Pixel World</title>
+  <title>Birthday Countdown - 16-bit Pixel Art</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- حاوية الخلفيات لفترات اليوم (15 دقيقة للدورة الكاملة) -->
+  <!-- حاوية المشهد والخلفيات البكسلية -->
   <div class="pixel-background-container">
-    <div class="pixel-bg morning" id="bg-morning"></div>
-    <div class="pixel-bg evening" id="bg-evening"></div>
-    <div class="pixel-bg night" id="bg-night"></div>
-  </div>
+    <div id="bg-morning" class="pixel-bg active"></div>
+    <div id="bg-evening" class="pixel-bg"></div>
+    <div id="bg-night" class="pixel-bg"></div>
 
-  <!-- حاوية العناصر الحية والتأثيرات (فانوس، بخار، تموجات) -->
-  <div class="effects-layer">
-    <div class="lantern-glow"></div>
-    <div class="steam-effect"></div>
-  </div>
+    <!-- تأثيرات بيئية حية فوق المشهد -->
+    <!-- 1. توهج النجوم في الليل -->
+    <div class="stars-layer"></div>
 
-  <!-- محتوى الصفحة: المؤقت والمشهد -->
-  <main class="content-wrapper">
-    <div class="countdown-box">
-      <h2 class="countdown-title">الوَقتُ المَبقِي لِعيدِ الميلاف</h2>
-      <div id="timer" class="timer-display">00 : 00 : 00 : 00</div>
+    <!-- 2. وميض الفوانيس (الفانوس المعلق وفانوس الطاولة) -->
+    <div class="lantern-glow glow-top"></div>
+    <div class="lantern-glow glow-table"></div>
+
+    <!-- 3. تصاعد بخار الشوكولاتة الدافئة -->
+    <div class="steam-container">
+      <div class="steam-particle"></div>
+      <div class="steam-particle"></div>
+      <div class="steam-particle"></div>
     </div>
-  </main>
+  </div>
+
+  <!-- حاوية الواجهة والمؤقت والتفاصيل الحالية -->
+  <div class="content-wrapper">
+    <div class="routine-status-box">
+      <span id="routine-phase" class="routine-phase">فترة الصباح ☕</span>
+      <p id="routine-activity" class="routine-activity">احتساء الشوكولاتة بالحليب الدافئة...</p>
+    </div>
+
+    <div class="countdown-box">
+      <div class="countdown-title">الوقت المتبقي لعيد الميلاد (2 مارس)</div>
+      <div id="timer" class="timer-display">جاري التحميل...</div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
