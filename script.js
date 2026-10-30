@@ -41,16 +41,16 @@ update15MinLoop();
 // 2. نظام العداد التنازلي لعيد الميلاد (مستمر سنوياً)
 // ==========================================
 
-// ⚠️ يمكنك تعديل شهر ويوم عيد الميلاد هنا (الشهر يبدأ من 0 حتى 11 | مثلاً: يناير=0، ديسمبر=11)
-const BIRTHDAY_MONTH = 5; // شهر يونيو (June = index 5)
-const BIRTHDAY_DAY = 15;  // يوم 15
+// تعيين تاريخ عيد الميلاد: 2 مارس (الشهر 2 يعني مارس لأن الأشهر تبدأ من 0: يناير=0، فبراير=1، مارس=2)
+const BIRTHDAY_MONTH = 2; // مارس
+const BIRTHDAY_DAY = 2;   // يوم 2
 
 function getNextBirthdayDate() {
   const now = new Date();
   let targetYear = now.getFullYear();
   let nextBirthday = new Date(targetYear, BIRTHDAY_MONTH, BIRTHDAY_DAY, 0, 0, 0);
 
-  // إذا انقضى عيد الميلاد لهذا العام، تحويل الهدف إلى العام القادم
+  // إذا انقضى عيد الميلاد لهذا العام، تحويل الهدف إلى العام القادم تلقائياً
   if (now > nextBirthday) {
     nextBirthday = new Date(targetYear + 1, BIRTHDAY_MONTH, BIRTHDAY_DAY, 0, 0, 0);
   }
@@ -70,7 +70,6 @@ function updateCountdown() {
 
   const timerElement = document.getElementById('timer');
   if (timerElement) {
-    // تنسيق إظهار خانتين دائماً (01, 02, ..)
     const d = String(days).padStart(2, '0');
     const h = String(hours).padStart(2, '0');
     const m = String(minutes).padStart(2, '0');
