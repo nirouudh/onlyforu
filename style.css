@@ -23,16 +23,21 @@ body, html {
   z-index: 1; /* جعلناها في المقدمة قليلاً خلف المؤقت للتأكد من ظهورها */
 }
 
-/* خصائص طبقات الصور للبكسل آرت */
+/* خصائص طبقات الصور للبكسل آرت مع إظهارها كاملة بالحواشي */
 .pixel-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-size: cover;
+  
+  /* تغيير من cover إلى contain لتظهر الصورة بالكامل دون قص */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
+  
+  /* لون الحواشي (الهوامش) ليحيط بالصورة بشكل جميل وأنيق */
+  background-color: #0d0d12; 
   
   /* الحفاظ على حواف البكسل حادة ودقيقة */
   image-rendering: pixelated;
