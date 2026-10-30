@@ -43,13 +43,13 @@ body, html {
   transition: opacity 4s ease-in-out;
 }
 
-/* روابط الصور (سنقوم برفع الصور لاحقاً بنفس الأسماء) */
+/* روابط الصور بالصيغ الصحيحة للملفات التي رفعتها */
 #bg-morning {
   background-image: url('assets/images/morning.png');
 }
 
 #bg-evening {
-  background-image: url('assets/images/evening.png');
+  background-image: url('assets/images/evening.jfif');
 }
 
 #bg-night {
@@ -95,3 +95,4 @@ body, html {
   font-weight: bold;
   letter-spacing: 2px;
 }
+
