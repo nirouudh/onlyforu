@@ -1,4 +1,6 @@
-/* إعدادات أساسية */
+/* ==========================================
+   1. الإعدادات الأساسية والخلفيات
+   ========================================== */
 * {
   margin: 0;
   padding: 0;
@@ -10,7 +12,7 @@ body, html {
   height: 100%;
   overflow: hidden;
   font-family: 'Courier New', Courier, monospace;
-  background-color: #111;
+  background-color: #0d0d12; /* لون متناسق للحواشي والهوامش */
 }
 
 /* حاوية الخلفيات المتعددة */
@@ -20,7 +22,7 @@ body, html {
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1; /* جعلناها في المقدمة قليلاً خلف المؤقت للتأكد من ظهورها */
+  z-index: 1;
 }
 
 /* خصائص طبقات الصور للبكسل آرت مع إظهارها كاملة بالحواشي */
@@ -31,12 +33,12 @@ body, html {
   width: 100%;
   height: 100%;
   
-  /* تغيير من cover إلى contain لتظهر الصورة بالكامل دون قص */
+  /* إظهار الصورة كاملة دون قص باستخدام contain */
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   
-  /* لون الحواشي (الهوامش) ليحيط بالصورة بشكل جميل وأنيق */
+  /* لون الحواشي حول الصورة */
   background-color: #0d0d12; 
   
   /* الحفاظ على حواف البكسل حادة ودقيقة */
@@ -66,7 +68,9 @@ body, html {
   opacity: 1;
 }
 
-/* تنسيق حاوية المحتوى والمؤقت في منتصف الشاشة */
+/* ==========================================
+   2. تنسيق المحتوى والمؤقت في الشاشة
+   ========================================== */
 .content-wrapper {
   position: relative;
   width: 100%;
@@ -82,7 +86,7 @@ body, html {
 }
 
 .countdown-box {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   padding: 15px 30px;
   border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -91,13 +95,13 @@ body, html {
 }
 
 .countdown-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   margin-bottom: 8px;
   color: #ffd700;
 }
 
 .timer-display {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
