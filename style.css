@@ -1,1 +1,97 @@
+/* إعدادات أساسية */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #111;
+}
+
+/* حاوية الخلفيات المتعددة */
+.pixel-background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+/* خصائص طبقات الصور للبكسل آرت */
+.pixel-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  /* الحفاظ على حواف البكسل حادة ودقيقة */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  
+  /* الانتقال الناعم (Cross-Fade) */
+  opacity: 0;
+  transition: opacity 4s ease-in-out;
+}
+
+/* روابط الصور (سنقوم برفع الصور لاحقاً بنفس الأسماء) */
+#bg-morning {
+  background-image: url('assets/images/morning.png');
+}
+
+#bg-evening {
+  background-image: url('assets/images/evening.png');
+}
+
+#bg-night {
+  background-image: url('assets/images/night.png');
+}
+
+/* تفعيل الطبقة النشطة */
+.pixel-bg.active {
+  opacity: 1;
+}
+
+/* تنسيق حاوية المحتوى والمؤقت في منتصف الشاشة */
+.content-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 40px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.countdown-box {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 15px 30px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  text-align: center;
+  backdrop-filter: blur(4px);
+}
+
+.countdown-title {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: #ffd700;
+}
+
+.timer-display {
+  font-size: 1.8rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
