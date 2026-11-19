@@ -3,119 +3,90 @@
 // ==========================================
 
 const nightVideos = [
-  'assets/images/night/111.mp4',
-  'assets/images/night/112.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/111.mp4',
-  'assets/images/night/112.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/113.mp4',
-  'assets/images/night/111.mp4',
-  'assets/images/night/112.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/113.mp4',
-  'assets/images/night/111.mp4',
-  'assets/images/night/115.mp4',
-  'assets/images/night/113.mp4',
-  'assets/images/night/112.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/111.mp4',
-  'assets/images/night/111.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/115.mp4',
-  'assets/images/night/113.mp4',
-  'assets/images/night/116.mp4',
-  'assets/images/night/111.mp4',
-  'assets/images/night/113.mp4',
-  'assets/images/night/114.mp4',
-  'assets/images/night/119.mp4',
-  'assets/images/night/119.2.mp4',
-  'assets/images/night/117.mp4',
-  'assets/images/night/119.4.mp4',
-  'assets/images/night/119.2.mp4',
-  'assets/images/night/119.4.mp4',
-  'assets/images/night/119.3.mp4',
-  'assets/images/night/118.mp4',
-  'assets/images/night/119.4.mp4',
-  'assets/images/night/119.2.mp4',
-  'assets/images/night/119.1.mp4'
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/112.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/112.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/113.mp4',
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/112.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/113.mp4',
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/115.mp4',
+  'assets/videos/night/113.mp4',
+  'assets/videos/night/112.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/115.mp4',
+  'assets/videos/night/113.mp4',
+  'assets/videos/night/116.mp4',
+  'assets/videos/night/111.mp4',
+  'assets/videos/night/113.mp4',
+  'assets/videos/night/114.mp4',
+  'assets/videos/night/119.mp4',
+  'assets/videos/night/119.2.mp4',
+  'assets/videos/night/117.mp4',
+  'assets/videos/night/119.4.mp4',
+  'assets/videos/night/119.2.mp4',
+  'assets/videos/night/119.4.mp4',
+  'assets/videos/night/119.3.mp4',
+  'assets/videos/night/118.mp4',
+  'assets/videos/night/119.4.mp4',
+  'assets/videos/night/119.2.mp4',
+  'assets/videos/night/119.1.mp4'
 ];
 
 let currentVideoIndex = 0;
 let activeVideoTag = 'A';
-let isTransitioning = false;
 
 const videoA = document.getElementById('video-a');
 const videoB = document.getElementById('video-b');
 
-// تجهيز الفيديو التالي مسبقاً في الخلفية ليكون جاهزاً قبل نهاية الحالي
-function preloadNextVideo(nextIndex) {
-  const standbyVid = activeVideoTag === 'A' ? videoB : videoA;
-  standbyVid.src = nightVideos[nextIndex];
-  standbyVid.load();
-}
+// ==========================================
+// محرك التبديل الناعم السريع (Cross-Fade)
+// ==========================================
 
-// تنفيذ التداخل الناعم قبل انتهاء الفيديو الحالي
-function triggerCrossFade() {
-  if (isTransitioning) return;
-  isTransitioning = true;
-
+function playVideo(videoSrc) {
   const currentVid = activeVideoTag === 'A' ? videoA : videoB;
   const nextVid    = activeVideoTag === 'A' ? videoB : videoA;
 
-  nextVid.play().then(() => {
+  nextVid.src = videoSrc;
+  nextVid.load();
+
+  nextVid.oncanplaythrough = () => {
+    nextVid.play();
     nextVid.classList.add('active');
     currentVid.classList.remove('active');
-
     activeVideoTag = activeVideoTag === 'A' ? 'B' : 'A';
-    currentVideoIndex = (currentVideoIndex + 1) % nightVideos.length;
-
-    // بعد انتهاء التلاشي (0.6 ثانية)، نوقف القديم ونجهز الفيديو الذي يليه مسبقاً
-    setTimeout(() => {
-      currentVid.pause();
-      isTransitioning = false;
-      const upcomingIndex = (currentVideoIndex + 1) % nightVideos.length;
-      preloadNextVideo(upcomingIndex);
-    }, 650);
-  }).catch(() => {
-    isTransitioning = false;
-  });
+    nextVid.oncanplaythrough = null;
+  };
 }
 
-// مراقبة الوقت المتبقي في الفيديو النشط لبدء التداخل قبل النهاية بـ 0.6 ثانية
-function checkVideoProgress(e) {
-  const vid = e.target;
-  const isCurrentActive = (activeVideoTag === 'A' && vid === videoA) || (activeVideoTag === 'B' && vid === videoB);
-  
-  if (!isCurrentActive || isTransitioning || !vid.duration) return;
-
-  const timeRemaining = vid.duration - vid.currentTime;
-  if (timeRemaining <= 0.6) {
-    triggerCrossFade();
-  }
+// الانتقال للمقطع التالي تلقائياً عند انتهاء المقطع الحالي بالترتيب المحدد
+function handleVideoEnded() {
+  currentVideoIndex = (currentVideoIndex + 1) % nightVideos.length;
+  playVideo(nightVideos[currentVideoIndex]);
 }
 
-videoA.addEventListener('timeupdate', checkVideoProgress);
-videoB.addEventListener('timeupdate', checkVideoProgress);
+videoA.addEventListener('ended', handleVideoEnded);
+videoB.addEventListener('ended', handleVideoEnded);
 
-// احتياط إضافي في حال انتهى مقطع قصير جداً فجأة
-videoA.addEventListener('ended', triggerCrossFade);
-videoB.addEventListener('ended', triggerCrossFade);
-
-// بدء التشغيل الأول وتجهيز المقطع الثاني فوراً
+// بدء تشغيل أول مقطع عند تحميل الصفحة
 window.addEventListener('DOMContentLoaded', () => {
-  videoA.src = nightVideos[0];
-  videoA.load();
-  videoA.play();
-  preloadNextVideo(1);
+  playVideo(nightVideos[0]);
 });
 
 // ==========================================
 // العداد التنازلي لعيد الميلاد (2 مارس)
 // ==========================================
-const BIRTHDAY_MONTH = 2; 
-const BIRTHDAY_DAY = 2;   
+const BIRTHDAY_MONTH = 2; // مارس
+const BIRTHDAY_DAY = 2;   // 2 مارس
 
 function getNextBirthdayDate() {
   const now = new Date();
