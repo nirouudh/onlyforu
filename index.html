@@ -23,7 +23,6 @@
       font-family: 'Courier New', Courier, monospace;
     }
 
-    /* تكبير الإطار والفيديو معاً مع الحفاظ على التناسق التام */
     .outer-frame {
       position: relative;
       height: 84vh;
@@ -34,7 +33,6 @@
       flex-shrink: 0;
     }
 
-    /* شاشة الفيديو الداخلية */
     .video-screen {
       position: absolute;
       top: 11.5%;
@@ -49,7 +47,7 @@
       align-items: center;
     }
 
-    /* إلغاء التداخل الضبابي نهائياً (تبديل فوري حاد ونظيف) */
+    /* استعادة التلاشي الناعم (Cross-Fade) بين الفيديوهات */
     .pixel-video {
       position: absolute;
       top: 0;
@@ -60,7 +58,9 @@
       max-height: 100% !important;
       object-fit: contain;
       opacity: 0;
-      transition: none; /* يمنع تراكب الإطارات الضبابي تماماً */
+      z-index: 1;
+      transition: opacity 0.6s ease-in-out;
+      transform: translateZ(0);
     }
 
     .pixel-video.active {
@@ -68,7 +68,6 @@
       z-index: 2;
     }
 
-    /* إزالة التكسير عن الإطار لاستعادة جودة الكتابة والأيقونات */
     .frame-overlay {
       position: absolute;
       top: 0;
@@ -76,12 +75,11 @@
       width: 100% !important;
       height: 100% !important;
       object-fit: fill;
-      image-rendering: auto; /* يحافظ على نعومة ووضوح الكتابة في الإطار */
+      image-rendering: auto;
       z-index: 3;
       pointer-events: none;
     }
 
-    /* العداد التنازلي أسفل الإطار */
     .content-wrapper {
       margin-top: 10px;
       width: 100%;
@@ -115,21 +113,15 @@
 </head>
 <body>
 
-  <!-- الإطار الخارجي الكبير (نافذة Paint) -->
   <div class="outer-frame">
-    
-    <!-- الإطار الداخلي المخصص للفيديوهات -->
     <div class="video-screen">
       <video id="video-a" class="pixel-video active" autoplay muted playsinline></video>
       <video id="video-b" class="pixel-video" autoplay muted playsinline></video>
     </div>
 
-    <!-- صورة الإطار المفرغة (PNG) -->
     <img src="assets/images/frame.png" alt="Frame" class="frame-overlay">
-
   </div>
 
-  <!-- العداد التنازلي أسفل الإطار -->
   <div class="content-wrapper">
     <div class="countdown-box">
       <div class="countdown-title">الوقت المتبقي لعيد الميلاد (2 مارس)</div>
@@ -137,6 +129,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=8"></script>
+  <script src="script.js?v=9"></script>
 </body>
 </html>
