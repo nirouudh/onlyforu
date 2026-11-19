@@ -23,12 +23,12 @@
       font-family: 'Courier New', Courier, monospace;
     }
 
-    /* تضييق عرض الإطار الخارجي بدقة ليتطابق مع نسبة الفيديو 9:16 بدون حواف سوداء */
+    /* تكبير الإطار والفيديو معاً مع الحفاظ على التناسق التام */
     .outer-frame {
       position: relative;
-      height: 78vh;
+      height: 84vh;
       aspect-ratio: 312 / 540;
-      max-width: 92vw;
+      max-width: 95vw;
       background-color: #0d0d12;
       box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
       flex-shrink: 0;
@@ -49,7 +49,7 @@
       align-items: center;
     }
 
-    /* الفيديوهات بدون قص وبانتقال سريع حاد يمنع الضبابية */
+    /* إلغاء التداخل الضبابي نهائياً (تبديل فوري حاد ونظيف) */
     .pixel-video {
       position: absolute;
       top: 0;
@@ -59,17 +59,16 @@
       max-width: 100% !important;
       max-height: 100% !important;
       object-fit: contain;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
       opacity: 0;
-      transition: opacity 0.15s linear;
+      transition: none; /* يمنع تراكب الإطارات الضبابي تماماً */
     }
 
     .pixel-video.active {
       opacity: 1;
+      z-index: 2;
     }
 
-    /* طبقة صورة الإطار PNG */
+    /* إزالة التكسير عن الإطار لاستعادة جودة الكتابة والأيقونات */
     .frame-overlay {
       position: absolute;
       top: 0;
@@ -77,37 +76,37 @@
       width: 100% !important;
       height: 100% !important;
       object-fit: fill;
-      image-rendering: pixelated;
-      z-index: 2;
+      image-rendering: auto; /* يحافظ على نعومة ووضوح الكتابة في الإطار */
+      z-index: 3;
       pointer-events: none;
     }
 
     /* العداد التنازلي أسفل الإطار */
     .content-wrapper {
-      margin-top: 14px;
+      margin-top: 10px;
       width: 100%;
       display: flex;
       justify-content: center;
-      z-index: 3;
+      z-index: 4;
       flex-shrink: 0;
     }
 
     .countdown-box {
       background: rgba(13, 13, 18, 0.9);
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 10px;
       border: 1px solid rgba(255, 182, 193, 0.4);
       text-align: center;
     }
 
     .countdown-title {
-      font-size: 0.75rem;
-      margin-bottom: 3px;
+      font-size: 0.72rem;
+      margin-bottom: 2px;
       color: #ffb74d;
     }
 
     .timer-display {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: bold;
       letter-spacing: 0.5px;
       color: #fff;
@@ -138,6 +137,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=7"></script>
+  <script src="script.js?v=8"></script>
 </body>
 </html>
