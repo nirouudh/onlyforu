@@ -4,7 +4,115 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Birthday Countdown - Night</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #0d0d12;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* تضييق عرض الإطار الخارجي بدقة ليتطابق مع نسبة الفيديو 9:16 بدون حواف سوداء */
+    .outer-frame {
+      position: relative;
+      height: 78vh;
+      aspect-ratio: 312 / 540;
+      max-width: 92vw;
+      background-color: #0d0d12;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
+      flex-shrink: 0;
+    }
+
+    /* شاشة الفيديو الداخلية */
+    .video-screen {
+      position: absolute;
+      top: 11.5%;
+      left: 22.5%;
+      width: 69%;
+      height: 66.5%;
+      overflow: hidden;
+      background-color: #0d0d12;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* الفيديوهات بدون قص وبانتقال سريع حاد يمنع الضبابية */
+    .pixel-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      object-fit: contain;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      opacity: 0;
+      transition: opacity 0.15s linear;
+    }
+
+    .pixel-video.active {
+      opacity: 1;
+    }
+
+    /* طبقة صورة الإطار PNG */
+    .frame-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: fill;
+      image-rendering: pixelated;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* العداد التنازلي أسفل الإطار */
+    .content-wrapper {
+      margin-top: 14px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 3;
+      flex-shrink: 0;
+    }
+
+    .countdown-box {
+      background: rgba(13, 13, 18, 0.9);
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 182, 193, 0.4);
+      text-align: center;
+    }
+
+    .countdown-title {
+      font-size: 0.75rem;
+      margin-bottom: 3px;
+      color: #ffb74d;
+    }
+
+    .timer-display {
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
 
@@ -30,7 +138,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>
-
