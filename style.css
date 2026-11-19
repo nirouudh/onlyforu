@@ -16,30 +16,39 @@ body, html {
   font-family: 'Courier New', Courier, monospace;
 }
 
-/* حاوية الفيديو العمودية 9:16 تتوسط الشاشة بدقة */
-.video-container {
+/* الإطار الخارجي الكبير */
+.outer-frame {
   position: relative;
-  width: 100%;
-  max-width: 400px; /* عرض ممتاز للهواتف والحواسيب */
-  aspect-ratio: 9 / 16; /* النسبة العمودية المطلوبة */
+  width: 92vw;
+  max-width: 440px;
+  aspect-ratio: 360 / 540;
   background-color: #0d0d12;
-  border-radius: 16px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
+}
+
+/* شاشة الفيديو الداخلية المطابقة لفتحة نافذة Paint */
+.video-screen {
+  position: absolute;
+  top: 11.5%;
+  left: 22.5%;
+  width: 69%;
+  height: 66.5%;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+  background-color: #0d0d12;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* عناصر الفيديو لملء الحاوية بسلاسة دون فراغات */
+/* الفيديوهات تحافظ على أبعادها وجودتها 100% بدون قص */
 .pixel-video {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; 
-  background-color: #0d0d12;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
   opacity: 0;
   transition: opacity 0.8s ease-in-out;
 }
@@ -48,22 +57,34 @@ body, html {
   opacity: 1;
 }
 
-/* صندوق العداد التنازلي تحت الفيديو أو فوقه بشكل أنيق */
+/* طبقة صورة الإطار PNG */
+.frame-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  image-rendering: pixelated;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* العداد التنازلي أسفل الإطار */
 .content-wrapper {
-  margin-top: 15px;
+  margin-top: 12px;
   width: 100%;
   display: flex;
   justify-content: center;
-  z-index: 10;
+  z-index: 3;
 }
 
 .countdown-box {
-  background: rgba(13, 13, 18, 0.85);
+  background: rgba(13, 13, 18, 0.9);
   padding: 8px 16px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 182, 193, 0.4);
   text-align: center;
-  backdrop-filter: blur(5px);
 }
 
 .countdown-title {
