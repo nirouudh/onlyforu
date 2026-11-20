@@ -49,70 +49,64 @@ const videoA = document.getElementById('video-a');
 const videoB = document.getElementById('video-b');
 
 // ==========================================
-// نظام فقاعات المحادثة الديناميكي (iMessage)
+// نظام فقاعات المحادثة الديناميكي المستقل (iMessage)
 // ==========================================
 const chatOverlay = document.getElementById('chat-overlay');
-let autoHideTimer = null;
 let isConversationRunning = false;
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// 1. إخفاء جميع الفقاعات بعد 6 ثوانٍ إذا كانت هذه آخر رسالة في المحادثة
-function scheduleChatAutoHide(delayMs = 6000) {
-  if (autoHideTimer) clearTimeout(autoHideTimer);
-  autoHideTimer = setTimeout(() => {
-    const bubbles = chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out)');
-    bubbles.forEach(b => {
-      b.classList.add('fade-out');
-      setTimeout(() => {
-        if (b.parentNode) b.remove();
-      }, 450);
-    });
-  }, delayMs);
+// دالة إخفاء فقاعة واحدة بنعومة وإزالتها من الشاشة
+function dismissBubble(bubble) {
+  if (!bubble || !bubble.parentNode || bubble.classList.contains('fade-out')) return;
+  
+  if (bubble.hideTimer) {
+    clearTimeout(bubble.hideTimer);
+    bubble.hideTimer = null;
+  }
+
+  bubble.classList.add('fade-out');
+  setTimeout(() => {
+    if (bubble.parentNode) bubble.remove();
+  }, 450);
 }
 
-// 2. إذا ظهرت 3 رسائل أخرى تحت رسالة سابقة، تنتظر 6 ثوانٍ ثم تختفي بهدوء
-function scheduleOverflowRemoval() {
+// شبكة الأمان البصرية: منع تجاوز 3 فقاعات في الأعلى عند تتابع الرسائل الكثيرة
+function enforceMaxVisibleBubbles(maxCount = 3) {
   const activeBubbles = Array.from(
-    chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out):not(.scheduled-removal)')
+    chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out)')
   );
 
-  // وجود أكثر من 3 فقاعات يعني أن أقدم فقاعة أصبح تحتها 3 رسائل أخرى
-  if (activeBubbles.length > 3) {
-    const oldest = activeBubbles[0];
-    oldest.classList.add('scheduled-removal');
-
-    setTimeout(() => {
-      if (oldest.parentNode && !oldest.classList.contains('fade-out')) {
-        oldest.classList.add('fade-out');
-        setTimeout(() => {
-          if (oldest.parentNode) oldest.remove();
-        }, 450);
-      }
-    }, 6000);
+  while (activeBubbles.length >= maxCount) {
+    const oldest = activeBubbles.shift();
+    dismissBubble(oldest);
   }
 }
 
-// 3. عرض رسالة واحدة مع مؤشر الكتابة (...) لمدة 3 ثوانٍ دائماً قبل كل رسالة
+// عرض رسالة واحدة بمؤقت مستقل خاص بها
 async function showSingleMessage(sender, text) {
-  if (autoHideTimer) clearTimeout(autoHideTimer);
+  // التأكد من عدم وجود أكثر من 3 فقاعات قبل إضافة الفقاعة الجديدة
+  enforceMaxVisibleBubbles(3);
 
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble ${sender}`;
   bubble.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
   chatOverlay.appendChild(bubble);
 
-  // فحص ما إذا أصبح تحت الرسالة الأولى 3 رسائل أخرى لجدولة إخفائها بعد 6 ثوانٍ
-  scheduleOverflowRemoval();
-
   requestAnimationFrame(() => {
     bubble.classList.add('visible');
   });
 
-  // مدة النقاط الثلاث قبل كل رسالة: 3 ثوانٍ بالضبط
+  // مدة ظهور النقاط الثلاث (...) قبل كل رسالة: 3 ثوانٍ بالضبط
   await wait(3000);
 
+  // استبدال النقاط بالنص الفعلي
   bubble.textContent = text;
+
+  // بدء المؤقت المستقل لهذه الرسالة وحدها: تختفي بعد 6 ثوانٍ من ظهور نصّها
+  bubble.hideTimer = setTimeout(() => {
+    dismissBubble(bubble);
+  }, 6000);
 }
 
 // تشغيل تسلسل محادثة كاملة
@@ -125,8 +119,6 @@ async function playConversationSequence(messages) {
     await showSingleMessage(msg.sender, msg.text);
   }
 
-  // عند انتهاء آخر رسالة في المحادثة: تبقى 6 ثوانٍ ثم تختفي
-  scheduleChatAutoHide(6000);
   isConversationRunning = false;
 }
 
