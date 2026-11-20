@@ -52,66 +52,67 @@ const videoB = document.getElementById('video-b');
 // نظام فقاعات المحادثة الديناميكي (iMessage)
 // ==========================================
 const chatOverlay = document.getElementById('chat-overlay');
-let lastMessageTimestamp = 0;
 let autoHideTimer = null;
 let isConversationRunning = false;
 
-// دالة مساعدة للانتظار
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// إخفاء جميع الفقاعات بهدوء بعد انتهاء المحادثة
-function scheduleChatAutoHide(delayMs = 3500) {
+// 1. إخفاء جميع الفقاعات بعد 6 ثوانٍ إذا كانت هذه آخر رسالة في المحادثة
+function scheduleChatAutoHide(delayMs = 6000) {
   if (autoHideTimer) clearTimeout(autoHideTimer);
   autoHideTimer = setTimeout(() => {
-    const bubbles = chatOverlay.querySelectorAll('.chat-bubble');
-    bubbles.forEach(b => b.classList.add('fade-out'));
-    setTimeout(() => {
-      chatOverlay.innerHTML = '';
-    }, 450);
+    const bubbles = chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out)');
+    bubbles.forEach(b => {
+      b.classList.add('fade-out');
+      setTimeout(() => {
+        if (b.parentNode) b.remove();
+      }, 450);
+    });
   }, delayMs);
 }
 
-// إزالة أقدم فقاعة إذا زاد العدد عن 3 فقاعات
-function enforceMaxBubbles(maxCount = 3) {
-  const bubbles = Array.from(chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out)'));
-  if (bubbles.length >= maxCount) {
-    const oldest = bubbles[0];
-    oldest.classList.add('fade-out');
+// 2. إذا ظهرت 3 رسائل أخرى تحت رسالة سابقة، تنتظر 6 ثوانٍ ثم تختفي بهدوء
+function scheduleOverflowRemoval() {
+  const activeBubbles = Array.from(
+    chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out):not(.scheduled-removal)')
+  );
+
+  // وجود أكثر من 3 فقاعات يعني أن أقدم فقاعة أصبح تحتها 3 رسائل أخرى
+  if (activeBubbles.length > 3) {
+    const oldest = activeBubbles[0];
+    oldest.classList.add('scheduled-removal');
+
     setTimeout(() => {
-      if (oldest.parentNode) oldest.remove();
-    }, 450);
+      if (oldest.parentNode && !oldest.classList.contains('fade-out')) {
+        oldest.classList.add('fade-out');
+        setTimeout(() => {
+          if (oldest.parentNode) oldest.remove();
+        }, 450);
+      }
+    }, 6000);
   }
 }
 
-// عرض رسالة واحدة مع مؤشر الكتابة (...) حسب القواعد
+// 3. عرض رسالة واحدة مع مؤشر الكتابة (...) لمدة 3 ثوانٍ دائماً قبل كل رسالة
 async function showSingleMessage(sender, text) {
   if (autoHideTimer) clearTimeout(autoHideTimer);
 
-  const now = Date.now();
-  const timeSinceLast = now - lastMessageTimestamp;
-  
-  // إذا مر أكثر من 10 ثوانٍ فهي محادثة جديدة -> 3 ثوانٍ نقاط، وإلا -> 1 ثانية نقاط
-  const typingDuration = (lastMessageTimestamp === 0 || timeSinceLast > 10000) ? 3000 : 1000;
-
-  enforceMaxBubbles(3);
-
-  // إنشاء فقاعة مؤشر الكتابة (...)
   const bubble = document.createElement('div');
-  bubble.className = `chat-bubble ${sender}`; // 'character' (رمادي يسار) أو 'user' (أزرق يمين)
+  bubble.className = `chat-bubble ${sender}`;
   bubble.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
   chatOverlay.appendChild(bubble);
 
-  // تفعيل حركة الظهور الناعم
+  // فحص ما إذا أصبح تحت الرسالة الأولى 3 رسائل أخرى لجدولة إخفائها بعد 6 ثوانٍ
+  scheduleOverflowRemoval();
+
   requestAnimationFrame(() => {
     bubble.classList.add('visible');
   });
 
-  // الانتظار حسب مدة الكتابة (3 ثوانٍ أو 1 ثانية)
-  await wait(typingDuration);
+  // مدة النقاط الثلاث قبل كل رسالة: 3 ثوانٍ بالضبط
+  await wait(3000);
 
-  // استبدال النقاط بالنص الفعلي وتمدد الفقاعة تلقائياً
   bubble.textContent = text;
-  lastMessageTimestamp = Date.now();
 }
 
 // تشغيل تسلسل محادثة كاملة
@@ -124,8 +125,8 @@ async function playConversationSequence(messages) {
     await showSingleMessage(msg.sender, msg.text);
   }
 
-  // عند انتهاء آخر رسالة في المحادثة: تختفي بعد 3.5 ثوانٍ
-  scheduleChatAutoHide(3500);
+  // عند انتهاء آخر رسالة في المحادثة: تبقى 6 ثوانٍ ثم تختفي
+  scheduleChatAutoHide(6000);
   isConversationRunning = false;
 }
 
@@ -158,12 +159,10 @@ function playVideo(videoSrc, index) {
     activeVideoTag = activeVideoTag === 'A' ? 'B' : 'A';
     nextVid.oncanplaythrough = null;
 
-    // فحص ما إذا كان لهذا الفيديو محادثة مخصصة
     checkVideoConversations(index);
   };
 }
 
-// الانتقال للمقطع التالي تلقائياً عند انتهاء المقطع الحالي بالترتيب المحدد
 function handleVideoEnded() {
   currentVideoIndex = (currentVideoIndex + 1) % nightVideos.length;
   playVideo(nightVideos[currentVideoIndex], currentVideoIndex);
@@ -172,7 +171,6 @@ function handleVideoEnded() {
 videoA.addEventListener('ended', handleVideoEnded);
 videoB.addEventListener('ended', handleVideoEnded);
 
-// بدء تشغيل أول مقطع عند تحميل الصفحة
 window.addEventListener('DOMContentLoaded', () => {
   playVideo(nightVideos[0], 0);
 });
