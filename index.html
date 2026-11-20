@@ -49,7 +49,7 @@
       align-items: center;
     }
 
-    /* إلغاء التداخل الضبابي نهائياً (تبديل فوري حاد ونظيف) */
+    /* الفيديوهات */
     .pixel-video {
       position: absolute;
       top: 0;
@@ -60,7 +60,7 @@
       max-height: 100% !important;
       object-fit: contain;
       opacity: 0;
-      transition: none; /* يمنع تراكب الإطارات الضبابي تماماً */
+      transition: none;
     }
 
     .pixel-video.active {
@@ -68,7 +68,125 @@
       z-index: 2;
     }
 
-    /* إزالة التكسير عن الإطار لاستعادة جودة الكتابة والأيقونات */
+    /* ==========================================
+       طبقة فقاعات المحادثة (iMessage Style)
+       ========================================== */
+    .chat-overlay {
+      position: absolute;
+      top: 4%;
+      left: 0;
+      width: 100%;
+      height: 35%; /* الثلث العلوي فقط فوق السماء والبحيرة */
+      padding: 4px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 6px;
+      z-index: 5; /* أعلى من الفيديوهات ومستقلة تماماً */
+      pointer-events: none;
+      direction: ltr; /* اتجاه المحادثة الطبيعي يسار/يمين */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .chat-bubble {
+      position: relative;
+      width: fit-content;
+      max-width: 78%;
+      padding: 6px 11px;
+      border-radius: 15px;
+      font-size: clamp(11px, 1.8vh, 14px);
+      line-height: 1.3;
+      word-wrap: break-word;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .chat-bubble.visible {
+      opacity: 0.93;
+      transform: translateY(0) scale(1);
+    }
+
+    .chat-bubble.fade-out {
+      opacity: 0 !important;
+      transform: translateY(-6px) scale(0.96);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    /* فقاعة الشخصية (رمادية على اليسار مع الذيل) */
+    .chat-bubble.character {
+      align-self: flex-start;
+      background-color: #e5e5ea;
+      color: #111111;
+      border-bottom-left-radius: 4px;
+      margin-left: 4px;
+    }
+
+    .chat-bubble.character::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: -5px;
+      width: 10px;
+      height: 12px;
+      background-color: #e5e5ea;
+      border-bottom-right-radius: 10px;
+      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    }
+
+    /* فقاعة المتحدث (زرقاء على اليمين مع الذيل) */
+    .chat-bubble.user {
+      align-self: flex-end;
+      background-color: #007aff;
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+      margin-right: 4px;
+    }
+
+    .chat-bubble.user::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      right: -5px;
+      width: 10px;
+      height: 12px;
+      background-color: #007aff;
+      border-bottom-left-radius: 10px;
+      clip-path: polygon(0 0, 0 100%, 100% 100%);
+    }
+
+    /* مؤشر الكتابة ذو النقاط الثلاث (...) */
+    .typing-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 14px;
+      padding: 0 2px;
+    }
+
+    .typing-dots span {
+      width: 5px;
+      height: 5px;
+      background-color: #7a7a80;
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+
+    .chat-bubble.user .typing-dots span {
+      background-color: rgba(255, 255, 255, 0.85);
+    }
+
+    .typing-dots span:nth-child(1) { animation-delay: 0s; }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+      30% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    /* صورة الإطار PNG */
     .frame-overlay {
       position: absolute;
       top: 0;
@@ -76,8 +194,8 @@
       width: 100% !important;
       height: 100% !important;
       object-fit: fill;
-      image-rendering: auto; /* يحافظ على نعومة ووضوح الكتابة في الإطار */
-      z-index: 3;
+      image-rendering: auto;
+      z-index: 6;
       pointer-events: none;
     }
 
@@ -87,7 +205,7 @@
       width: 100%;
       display: flex;
       justify-content: center;
-      z-index: 4;
+      z-index: 7;
       flex-shrink: 0;
     }
 
@@ -122,6 +240,9 @@
     <div class="video-screen">
       <video id="video-a" class="pixel-video active" autoplay muted playsinline></video>
       <video id="video-b" class="pixel-video" autoplay muted playsinline></video>
+      
+      <!-- حاوية فقاعات المحادثة في الثلث العلوي -->
+      <div id="chat-overlay" class="chat-overlay"></div>
     </div>
 
     <!-- صورة الإطار المفرغة (PNG) -->
@@ -137,6 +258,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=8"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>
