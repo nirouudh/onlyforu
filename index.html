@@ -2,36 +2,46 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Birthday Countdown - Night</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     html, body {
-      width: 100vw;
-      height: 100vh;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
       overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: manipulation;
       background-color: #0d0d12;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      padding: 10px 0;
       font-family: 'Courier New', Courier, monospace;
     }
 
-    /* تكبير الإطار والفيديو معاً مع الحفاظ على التناسق التام */
+    /* تكبير الإطار والفيديو معاً مع الحفاظ على التناسق التام وضمان مساحة العداد */
     .outer-frame {
       position: relative;
-      height: 84vh;
+      height: 82dvh;
+      max-height: calc(100dvh - 78px);
       aspect-ratio: 312 / 540;
-      max-width: 95vw;
+      max-width: 94vw;
       background-color: #0d0d12;
       box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
-      flex-shrink: 0;
+      flex-shrink: 1;
+      transform: translateZ(0);
     }
 
     /* شاشة الفيديو الداخلية */
@@ -49,7 +59,7 @@
       align-items: center;
     }
 
-    /* الفيديوهات */
+    /* الفيديوهات مع تسريع المعالج الرسومي لمنع الوميض */
     .pixel-video {
       position: absolute;
       top: 0;
@@ -60,6 +70,12 @@
       max-height: 100% !important;
       object-fit: contain;
       opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+      will-change: opacity;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
       transition: none;
     }
 
@@ -94,7 +110,7 @@
       max-width: 78%;
       padding: 6px 11px;
       border-radius: 15px;
-      font-size: clamp(11px, 1.8vh, 14px);
+      font-size: clamp(11px, 1.8dvh, 14px);
       line-height: 1.3;
       word-wrap: break-word;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
@@ -238,8 +254,8 @@
     
     <!-- الإطار الداخلي المخصص للفيديوهات -->
     <div class="video-screen">
-      <video id="video-a" class="pixel-video active" autoplay muted playsinline></video>
-      <video id="video-b" class="pixel-video" autoplay muted playsinline></video>
+      <video id="video-a" class="pixel-video active" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
+      <video id="video-b" class="pixel-video" muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
       
       <!-- حاوية فقاعات المحادثة في الثلث العلوي -->
       <div id="chat-overlay" class="chat-overlay"></div>
@@ -258,6 +274,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=13"></script>
+  <script src="script.js?v=14"></script>
 </body>
 </html>
