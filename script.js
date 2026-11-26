@@ -1,6 +1,36 @@
 document.addEventListener("DOMContentLoaded", () => {
     // =========================================================
-    // 1. إدارة الفترات والقوائم (Night -> Morning -> Evening)
+    // 1. العداد التنازلي لعيد الميلاد (2 مارس)
+    // =========================================================
+    const timerDisplay = document.getElementById("timer");
+
+    function updateCountdown() {
+        const now = new Date();
+        let currentYear = now.getFullYear();
+        let targetDate = new Date(currentYear, 2, 2, 0, 0, 0); // 2 مارس (الشهر 2 في JS هو مارس)
+
+        // إذا مرّ 2 مارس في السنة الحالية، نحسب لـ 2 مارس من السنة القادمة
+        if (now >= targetDate) {
+            targetDate = new Date(currentYear + 1, 2, 2, 0, 0, 0);
+        }
+
+        const diff = targetDate - now;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        const pad = (n) => String(n).padStart(2, "0");
+        if (timerDisplay) {
+            timerDisplay.textContent = `${days} يوم : ${pad(hours)} ساعة : ${pad(minutes)} دقيقة : ${pad(seconds)} ثانية`;
+        }
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // =========================================================
+    // 2. إدارة الفترات والقوائم (Night -> Morning -> Evening)
     // =========================================================
     const playlists = {
         night: {
@@ -15,11 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 "114.mp4", "114.1.mp4", "117.mp4", "118.mp4", "119.mp4",
                 "119.2.mp4", "119.1.mp4"
             ],
-            // محادثات الليل (تظهر نصوصها مع بداية الفيديو المستهدف)
             triggers: {
                 12: [
-                    { sender: "gray", text: "look at the stars tonight ✨" },
-                    { sender: "blue", text: "they remind me of you" }
+                    { sender: "character", text: "look at the stars tonight ✨" },
+                    { sender: "user", text: "they remind me of you" }
                 ]
             }
         },
@@ -37,62 +66,60 @@ document.addEventListener("DOMContentLoaded", () => {
                 "151.mp4", "136.mp4", "145.mp4", "152.mp4", "153.mp4", // 35 - 39
                 "154.mp4", "155.mp4", "153.mp4", "156.mp4"             // 40 - 43
             ],
-            // جدول محادثات الصباح (كل رقم يمثل الفهرس الذي ينكشف النص مع بدايته)
+            // جدول محادثات الصباح (user = أزرق يمين | character = رمادي يسار)
             triggers: {
                 // --- المحادثة الأولى ---
-                3:  [{ sender: "blue", text: "wech raki diri ?" }],
-                4:  [{ sender: "gray", text: "nakol fl fraises" }],
+                3:  [{ sender: "user", text: "wech raki diri ?" }],
+                4:  [{ sender: "character", text: "nakol fl fraises" }],
 
                 // --- المحادثة الثانية ---
-                15: [{ sender: "blue", text: "matensich tchrbi lma lyoumm" }],
-                16: [{ sender: "gray", text: "ma nchrbch amchi" }],
+                15: [{ sender: "user", text: "matensich tchrbi lma lyoumm" }],
+                16: [{ sender: "character", text: "ma nchrbch amchi" }],
 
                 // --- المحادثة الثالثة (محصورة بين 23 و 30 + استثناء التراكم) ---
-                24: [{ sender: "blue", text: "hii , can u guess what i am thinking about", allowStack: true }],
-                25: [{ sender: "gray", text: "balak", allowStack: true }],
-                26: [{ sender: "blue", text: "haya khammi", allowStack: true }],
-                27: [{ sender: "gray", text: "hada object wela makla", allowStack: true }],
-                28: [{ sender: "blue", text: "haja 7louwa , tebda bl d", allowStack: true }],
-                29: [{ sender: "gray", text: "emmm maerftch , blk donuts ?", allowStack: true }],
-                30: [{ sender: "blue", text: "douaa 🙂", allowStack: true }],
+                24: [{ sender: "user", text: "hii , can u guess what i am thinking about", allowStack: true }],
+                25: [{ sender: "character", text: "balak", allowStack: true }],
+                26: [{ sender: "user", text: "haya khammi", allowStack: true }],
+                27: [{ sender: "character", text: "hada object wela makla", allowStack: true }],
+                28: [{ sender: "user", text: "haja 7louwa , tebda bl d", allowStack: true }],
+                29: [{ sender: "character", text: "emmm maerftch , blk donuts ?", allowStack: true }],
+                30: [{ sender: "user", text: "douaa 🙂", allowStack: true }],
 
                 // --- المحادثة الرابعة ---
-                36: [{ sender: "gray", text: "kraht , ha ndir make up" }]
+                36: [{ sender: "character", text: "kraht , ha ndir make up" }]
             }
         },
 
         evening: {
             folder: "assets/videos/evening/",
-            videos: [], // جاهز لإضافة فيديوهات المساء لاحقاً
+            videos: [],
             triggers: {}
         }
     };
 
     const periodOrder = ["night", "morning", "evening"];
-    let currentPeriodIndex = 0; // نبدأ بالليل (0)
+    let currentPeriodIndex = 0; // 0 = الليل | 1 = الصباح
     let currentVideoIndex = 0;
 
     // =========================================================
-    // 2. عناصر الواجهة ومحرك الفيديو المزدوج
+    // 3. عناصر الواجهة المطابقة لملف index.html
     // =========================================================
-    const videoA = document.getElementById("videoA");
-    const videoB = document.getElementById("videoB");
-    const chatContainer = document.getElementById("chat-container");
+    const videoA = document.getElementById("video-a");
+    const videoB = document.getElementById("video-b");
+    const chatOverlay = document.getElementById("chat-overlay");
 
     let activeVideo = videoA;
     let standbyVideo = videoB;
 
-    // تتبع المحفزات التي تم إطلاقها في الدورة الحالية لمنع التكرار
     let firedPreTriggers = new Set();
     let firedExactTriggers = new Set();
 
-    // ثوابت التوقيت (بالملي ثانية)
-    const TYPING_DURATION = 3000;  // 3 ثوانٍ نقاط الكتابة (...)
+    const TYPING_DURATION = 3000;  // 3 ثوانٍ مؤشر الكتابة (...)
     const MESSAGE_LIFESPAN = 6000; // 6 ثوانٍ بقاء مستقل للنص
     const MAX_BUBBLES = 3;         // الحد الأقصى الافتراضي للفقاعات
 
     // =========================================================
-    // 3. دوال مساعدة للحصول على الحالة الحالية والتالية
+    // 4. دوال القوائم والتنقل بين الفترات
     // =========================================================
     function getCurrentPeriodName() {
         return periodOrder[currentPeriodIndex];
@@ -110,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return { periodIdx, videoIdx: videoIdx + 1 };
         }
 
-        // الانتقال للفترة التالية التي تحتوي على فيديوهات
         let nextP = (periodIdx + 1) % periodOrder.length;
         while (playlists[periodOrder[nextP]].videos.length === 0) {
             nextP = (nextP + 1) % periodOrder.length;
@@ -119,44 +145,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // =========================================================
-    // 4. نظام فقاعات المحادثة (iMessage Engine)
+    // 5. نظام فقاعات المحادثة (iMessage Engine)
     // =========================================================
     function enforceBubbleLimit(allowStack) {
-        if (allowStack) return; // استثناء المحادثة الثالثة: لا حذف بسبب التراكم
+        if (allowStack) return;
 
-        const bubbles = chatContainer.querySelectorAll(".chat-bubble:not(.fade-out)");
+        const bubbles = chatOverlay.querySelectorAll(".chat-bubble:not(.fade-out)");
         if (bubbles.length >= MAX_BUBBLES) {
-            const oldest = bubbles[0];
-            removeBubble(oldest);
+            removeBubble(bubbles[0]);
         }
     }
 
     function removeBubble(bubble) {
         if (!bubble || bubble.classList.contains("fade-out")) return;
+        bubble.classList.remove("visible");
         bubble.classList.add("fade-out");
         setTimeout(() => {
             if (bubble.parentNode) {
                 bubble.parentNode.removeChild(bubble);
             }
-        }, 400);
+        }, 450);
     }
 
-    function spawnMessage(msgObj, skipTyping = false) {
+    function spawnMessage(msgObj) {
         enforceBubbleLimit(msgObj.allowStack);
 
         const bubble = document.createElement("div");
-        bubble.classList.add("chat-bubble", msgObj.sender === "blue" ? "blue" : "gray");
+        // user = أزرق (يمين) | character = رمادي (يسار)
+        bubble.classList.add("chat-bubble", msgObj.sender === "user" ? "user" : "character");
+        bubble.innerHTML = `<span class="typing-dots"><span></span><span></span><span></span></span>`;
 
-        if (skipTyping) {
-            bubble.textContent = msgObj.text;
-            chatContainer.appendChild(bubble);
-            setTimeout(() => removeBubble(bubble), MESSAGE_LIFESPAN);
-            return;
-        }
+        chatOverlay.appendChild(bubble);
 
-        // مرحلة النقاط الثلاث (...) لمدة 3 ثوانٍ
-        bubble.innerHTML = `<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>`;
-        chatContainer.appendChild(bubble);
+        // تفعيل كلاس visible لإظهار الفقاعة بسلاسة حسب CSS
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                bubble.classList.add("visible");
+            });
+        });
 
         // كشف النص الفعلي بعد 3 ثوانٍ وبدء مؤقت البقاء المستقل (6 ثوانٍ)
         setTimeout(() => {
@@ -167,20 +193,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }, TYPING_DURATION);
     }
 
-    function triggerSequence(messages, preTriggered = false) {
+    function triggerSequence(messages) {
         if (!messages || messages.length === 0) return;
 
         messages.forEach((msg, i) => {
             const delay = i * (TYPING_DURATION + 400);
             setTimeout(() => {
-                // إذا أُطلقت النقاط مسبقاً قبل 3 ثوانٍ، نكشف النص مباشرة عند بداية الفيديو
-                spawnMessage(msg, false);
+                spawnMessage(msg);
             }, delay);
         });
     }
 
     // =========================================================
-    // 5. محرك المزامنة الزمنية للفيديو (Pre-Trigger & Playback)
+    // 6. محرك المزامنة الزمنية وتشغيل الفيديوهات
     // =========================================================
     function preloadNextVideo() {
         const next = getNextStep(currentPeriodIndex, currentVideoIndex);
@@ -203,11 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextKey = `${nextPeriodName}_${next.videoIdx}`;
         const nextTriggers = playlists[nextPeriodName].triggers[next.videoIdx];
 
-        // إطلاق مؤشر الكتابة (...) قبل نهاية الفيديو الحالي بـ 3 ثوانٍ
-        // لكي ينكشف النص بالضبط عند الثانية 0.0 من الفيديو التالي
+        // إطلاق النقاط الثلاث (...) قبل نهاية الفيديو الحالي بـ 3 ثوانٍ
+        // لينكشف النص مع بداية الفيديو التالي بالضبط
         if (nextTriggers && remaining <= 3.0 && !firedPreTriggers.has(nextKey)) {
             firedPreTriggers.add(nextKey);
-            triggerSequence(nextTriggers, true);
+            triggerSequence(nextTriggers);
         }
     }
 
@@ -220,7 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentKey = `${periodName}_${videoIdx}`;
         const videoSrc = playlist.folder + playlist.videos[videoIdx];
 
-        // تنظيف سجلات الدورة السابقة عند العودة للبداية
         if (periodIdx === 0 && videoIdx === 0 && !isFirstStart) {
             firedPreTriggers.clear();
             firedExactTriggers.clear();
@@ -228,10 +252,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (isFirstStart) {
             activeVideo.src = videoSrc;
+            activeVideo.muted = true;
             activeVideo.classList.add("active");
             activeVideo.play().catch(() => {});
         } else {
-            // تبديل حاد ونظيف بين المشغلين
+            standbyVideo.muted = true;
             standbyVideo.classList.add("active");
             activeVideo.classList.remove("active");
             activeVideo.pause();
@@ -243,18 +268,16 @@ document.addEventListener("DOMContentLoaded", () => {
             activeVideo.play().catch(() => {});
         }
 
-        // خطة احتياطية: إذا لم يتم إطلاق النقاط مسبقاً (مثلاً أول فيديو أو فيديو سابق قصير جداً)
+        // خطة احتياطية إذا لم يتم الإطلاق المسبق
         const currentTriggers = playlist.triggers[videoIdx];
         if (currentTriggers && !firedPreTriggers.has(currentKey) && !firedExactTriggers.has(currentKey)) {
             firedExactTriggers.add(currentKey);
-            triggerSequence(currentTriggers, false);
+            triggerSequence(currentTriggers);
         }
 
-        // تجهيز الفيديو التالي في الخلفية
         preloadNextVideo();
     }
 
-    // ربط مستمعي الأحداث بكلا المشغلين
     [videoA, videoB].forEach((vid) => {
         vid.addEventListener("timeupdate", () => {
             if (vid === activeVideo) {
@@ -268,8 +291,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 playVideoAt(next.periodIdx, next.videoIdx, false);
             }
         });
+
+        // في حال تعذر تحميل فيديو معين، ينتقل تلقائياً للتالي دون توقف الشاشة
+        vid.addEventListener("error", () => {
+            if (vid === activeVideo) {
+                const next = getNextStep(currentPeriodIndex, currentVideoIndex);
+                playVideoAt(next.periodIdx, next.videoIdx, false);
+            }
+        });
     });
 
-    // بدء التشغيل الأولي
+    // بدء التشغيل
     playVideoAt(0, 0, true);
 });
