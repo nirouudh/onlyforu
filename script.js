@@ -131,6 +131,8 @@ let currentVideoIndex = 0;
 let activeVideoTag = 'A';
 let preTriggeredKeys = new Set();
 let exactTriggeredKeys = new Set();
+let preloadedSrc = '';
+let isTransitioning = false;
 
 const videoA = document.getElementById('video-a');
 const videoB = document.getElementById('video-b');
@@ -245,9 +247,62 @@ function checkVideoConversations(phaseName, index) {
 }
 
 // ==========================================
-// محرك التبديل بين الفيديوهات (نفس محركك الأصلي الآمن)
+// محرك التبديل المحسّن بدون وميض + إدارة الذاكرة
 // ==========================================
+
+// 1. تفريغ ذاكرة الفيديو القديم الخفي لمنع امتلاء RAM في الهواتف
+function cleanupHiddenVideo(vidElement) {
+  if (!vidElement || vidElement.classList.contains('active')) return;
+  try {
+    vidElement.pause();
+    vidElement.removeAttribute('src');
+    vidElement.load();
+  } catch (e) {}
+}
+
+// 2. التحميل المسبق الخفي للفيديو القادم في العنصر الاحتياطي
+function preloadNextVideo() {
+  const next = getNextStep(currentPhaseIndex, currentVideoIndex);
+  const nextSrc = phases[next.phaseIndex].videos[next.videoIndex];
+  const hiddenVid = activeVideoTag === 'A' ? videoB : videoA;
+
+  if (preloadedSrc === nextSrc && hiddenVid.getAttribute('src') === nextSrc) {
+    return;
+  }
+
+  preloadedSrc = nextSrc;
+  hiddenVid.pause();
+  hiddenVid.src = nextSrc;
+  hiddenVid.load();
+}
+
+// 3. إتمام عملية التبديل البصري بعد رسم الإطار الأول لضمان عدم وجود أي ومضة سوداء
+function completeVisualSwap(currentVid, nextVid, phaseName, videoIndex) {
+  nextVid.classList.add('active');
+
+  // انتظار رسم الإطار الجديد فعلياً على الشاشة قبل إخفاء القديم
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      currentVid.classList.remove('active');
+      activeVideoTag = activeVideoTag === 'A' ? 'B' : 'A';
+      isTransitioning = false;
+
+      checkVideoConversations(phaseName, videoIndex);
+
+      // تنظيف ذاكرة الفيديو القديم ثم تحميل الفيديو التالي مسبقاً
+      setTimeout(() => {
+        cleanupHiddenVideo(currentVid);
+        preloadNextVideo();
+      }, 120);
+    });
+  });
+}
+
+// 4. تشغيل الفيديو مع الاستفادة من التحميل المسبق
 function playVideo(videoSrc, phaseIndex, videoIndex) {
+  if (isTransitioning) return;
+  isTransitioning = true;
+
   const currentVid = activeVideoTag === 'A' ? videoA : videoB;
   const nextVid    = activeVideoTag === 'A' ? videoB : videoA;
   const phaseName  = phases[phaseIndex].name;
@@ -258,18 +313,37 @@ function playVideo(videoSrc, phaseIndex, videoIndex) {
     exactTriggeredKeys.clear();
   }
 
-  nextVid.src = videoSrc;
-  nextVid.load();
-
-  nextVid.oncanplaythrough = () => {
-    nextVid.play();
-    nextVid.classList.add('active');
-    currentVid.classList.remove('active');
-    activeVideoTag = activeVideoTag === 'A' ? 'B' : 'A';
+  const startPlayback = () => {
+    nextVid.oncanplay = null;
     nextVid.oncanplaythrough = null;
+    nextVid.currentTime = 0;
 
-    checkVideoConversations(phaseName, videoIndex);
+    const playPromise = nextVid.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          completeVisualSwap(currentVid, nextVid, phaseName, videoIndex);
+        })
+        .catch(() => {
+          // في حال منع المتصفح التشغيل التلقائي مؤقتاً
+          nextVid.muted = true;
+          nextVid.play().finally(() => {
+            completeVisualSwap(currentVid, nextVid, phaseName, videoIndex);
+          });
+        });
+    } else {
+      completeVisualSwap(currentVid, nextVid, phaseName, videoIndex);
+    }
   };
+
+  // إذا كان الفيديو محملاً مسبقاً وجاهزاً في الذاكرة (readyState >= 3) يبدأ فوراً في 0ms
+  if (nextVid.getAttribute('src') === videoSrc && nextVid.readyState >= 3) {
+    startPlayback();
+  } else {
+    nextVid.src = videoSrc;
+    nextVid.load();
+    nextVid.oncanplay = startPlayback;
+  }
 }
 
 // مراقبة الوقت المتبقي من الفيديو الحالي لإطلاق النقاط الثلاث قبل بداية الفيديو التالي بـ 3 ثوانٍ
@@ -293,6 +367,7 @@ function handleVideoTimeUpdate(event) {
 }
 
 function handleVideoEnded() {
+  if (isTransitioning) return;
   const next = getNextStep(currentPhaseIndex, currentVideoIndex);
   currentPhaseIndex = next.phaseIndex;
   currentVideoIndex = next.videoIndex;
