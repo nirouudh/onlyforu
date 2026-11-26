@@ -1,213 +1,275 @@
-// ==========================================
-// ترتيب فيديوهات فترة الليل بدقة متناهية
-// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    // =========================================================
+    // 1. إدارة الفترات والقوائم (Night -> Morning -> Evening)
+    // =========================================================
+    const playlists = {
+        night: {
+            folder: "assets/videos/night/",
+            videos: [
+                "102.mp4", "105.mp4", "106.mp4", "107.mp4", "108.mp4",
+                "109.mp4", "110.mp4", "111.mp4", "112.mp4", "113.mp4",
+                "114.mp4", "114.1.mp4", "115.mp4", "116.mp4", "117.mp4",
+                "117.1.mp4", "118.mp4", "119.mp4", "119.1.mp4", "120.mp4",
+                "121.mp4", "122.mp4", "123.mp4", "124.mp4", "125.mp4",
+                "126.mp4", "127.mp4", "128.mp4", "129.mp4", "130.mp4",
+                "114.mp4", "114.1.mp4", "117.mp4", "118.mp4", "119.mp4",
+                "119.2.mp4", "119.1.mp4"
+            ],
+            // محادثات الليل (تظهر نصوصها مع بداية الفيديو المستهدف)
+            triggers: {
+                12: [
+                    { sender: "gray", text: "look at the stars tonight ✨" },
+                    { sender: "blue", text: "they remind me of you" }
+                ]
+            }
+        },
 
-const nightVideos = [
-  'assets/videos/night/111.mp4',   // 0
-  'assets/videos/night/112.mp4',   // 1
-  'assets/videos/night/116.mp4',   // 2
-  'assets/videos/night/111.mp4',   // 3
-  'assets/videos/night/112.mp4',   // 4
-  'assets/videos/night/116.mp4',   // 5
-  'assets/videos/night/113.mp4',   // 6
-  'assets/videos/night/111.mp4',   // 7
-  'assets/videos/night/112.mp4',   // 8
-  'assets/videos/night/116.mp4',   // 9
-  'assets/videos/night/113.mp4',   // 10
-  'assets/videos/night/111.mp4',   // 11
-  'assets/videos/night/115.mp4',   // 12 <-- الفيديو الأول 115 (تظهر فيه المحادثة)
-  'assets/videos/night/113.mp4',   // 13
-  'assets/videos/night/112.mp4',   // 14
-  'assets/videos/night/116.mp4',   // 15
-  'assets/videos/night/111.mp4',   // 16
-  'assets/videos/night/111.mp4',   // 17
-  'assets/videos/night/116.mp4',   // 18
-  'assets/videos/night/116.mp4',   // 19
-  'assets/videos/night/115.mp4',   // 20 <-- الفيديو الثاني 115 (لن تتكرر فيه المحادثة)
-  'assets/videos/night/113.mp4',   // 21
-  'assets/videos/night/116.mp4',   // 22
-  'assets/videos/night/111.mp4',   // 23
-  'assets/videos/night/113.mp4',   // 24
-  'assets/videos/night/114.mp4',   // 25
-  'assets/videos/night/119.mp4',   // 26
-  'assets/videos/night/119.2.mp4', // 27
-  'assets/videos/night/117.mp4',   // 28
-  'assets/videos/night/119.4.mp4', // 29
-  'assets/videos/night/119.2.mp4', // 30
-  'assets/videos/night/119.4.mp4', // 31
-  'assets/videos/night/119.3.mp4', // 32
-  'assets/videos/night/118.mp4',   // 33
-  'assets/videos/night/119.4.mp4', // 34
-  'assets/videos/night/119.2.mp4', // 35
-  'assets/videos/night/119.1.mp4'  // 36
-];
+        morning: {
+            folder: "assets/videos/morning/",
+            videos: [
+                "148.mp4", "134.mp4", "150.mp4", "151.mp4", "133.mp4", // 0 - 4
+                "147.mp4", "148.mp4", "145.mp4", "140.mp4", "131.mp4", // 5 - 9
+                "144.mp4", "143.mp4", "142.mp4", "151.mp4", "135.mp4", // 10 - 14
+                "150.mp4", "146.mp4", "137.mp4", "142.mp4", "141.mp4", // 15 - 19
+                "135.mp4", "157.mp4", "160.mp4", "161.mp4", "158.mp4", // 20 - 24
+                "160.mp4", "164.mp4", "165.mp4", "161.mp4", "160.mp4", // 25 - 29
+                "162.mp4", "163.mp4", "159.mp4", "166.mp4", "138.mp4", // 30 - 34
+                "151.mp4", "136.mp4", "145.mp4", "152.mp4", "153.mp4", // 35 - 39
+                "154.mp4", "155.mp4", "153.mp4", "156.mp4"             // 40 - 43
+            ],
+            // جدول محادثات الصباح (كل رقم يمثل الفهرس الذي ينكشف النص مع بدايته)
+            triggers: {
+                // --- المحادثة الأولى ---
+                3:  [{ sender: "blue", text: "wech raki diri ?" }],
+                4:  [{ sender: "gray", text: "nakol fl fraises" }],
 
-let currentVideoIndex = 0;
-let activeVideoTag = 'A';
+                // --- المحادثة الثانية ---
+                15: [{ sender: "blue", text: "matensich tchrbi lma lyoumm" }],
+                16: [{ sender: "gray", text: "ma nchrbch amchi" }],
 
-const videoA = document.getElementById('video-a');
-const videoB = document.getElementById('video-b');
+                // --- المحادثة الثالثة (محصورة بين 23 و 30 + استثناء التراكم) ---
+                24: [{ sender: "blue", text: "hii , can u guess what i am thinking about", allowStack: true }],
+                25: [{ sender: "gray", text: "balak", allowStack: true }],
+                26: [{ sender: "blue", text: "haya khammi", allowStack: true }],
+                27: [{ sender: "gray", text: "hada object wela makla", allowStack: true }],
+                28: [{ sender: "blue", text: "haja 7louwa , tebda bl d", allowStack: true }],
+                29: [{ sender: "gray", text: "emmm maerftch , blk donuts ?", allowStack: true }],
+                30: [{ sender: "blue", text: "douaa 🙂", allowStack: true }],
 
-// ==========================================
-// نظام فقاعات المحادثة الديناميكي المستقل (iMessage)
-// ==========================================
-const chatOverlay = document.getElementById('chat-overlay');
-let isConversationRunning = false;
+                // --- المحادثة الرابعة ---
+                36: [{ sender: "gray", text: "kraht , ha ndir make up" }]
+            }
+        },
 
-const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        evening: {
+            folder: "assets/videos/evening/",
+            videos: [], // جاهز لإضافة فيديوهات المساء لاحقاً
+            triggers: {}
+        }
+    };
 
-// دالة إخفاء فقاعة واحدة بنعومة وإزالتها من الشاشة
-function dismissBubble(bubble) {
-  if (!bubble || !bubble.parentNode || bubble.classList.contains('fade-out')) return;
-  
-  if (bubble.hideTimer) {
-    clearTimeout(bubble.hideTimer);
-    bubble.hideTimer = null;
-  }
+    const periodOrder = ["night", "morning", "evening"];
+    let currentPeriodIndex = 0; // نبدأ بالليل (0)
+    let currentVideoIndex = 0;
 
-  bubble.classList.add('fade-out');
-  setTimeout(() => {
-    if (bubble.parentNode) bubble.remove();
-  }, 450);
-}
+    // =========================================================
+    // 2. عناصر الواجهة ومحرك الفيديو المزدوج
+    // =========================================================
+    const videoA = document.getElementById("videoA");
+    const videoB = document.getElementById("videoB");
+    const chatContainer = document.getElementById("chat-container");
 
-// شبكة الأمان البصرية: منع تجاوز 3 فقاعات في الأعلى عند تتابع الرسائل الكثيرة
-function enforceMaxVisibleBubbles(maxCount = 3) {
-  const activeBubbles = Array.from(
-    chatOverlay.querySelectorAll('.chat-bubble:not(.fade-out)')
-  );
+    let activeVideo = videoA;
+    let standbyVideo = videoB;
 
-  while (activeBubbles.length >= maxCount) {
-    const oldest = activeBubbles.shift();
-    dismissBubble(oldest);
-  }
-}
+    // تتبع المحفزات التي تم إطلاقها في الدورة الحالية لمنع التكرار
+    let firedPreTriggers = new Set();
+    let firedExactTriggers = new Set();
 
-// عرض رسالة واحدة بمؤقت مستقل خاص بها
-async function showSingleMessage(sender, text) {
-  // التأكد من عدم وجود أكثر من 3 فقاعات قبل إضافة الفقاعة الجديدة
-  enforceMaxVisibleBubbles(3);
+    // ثوابت التوقيت (بالملي ثانية)
+    const TYPING_DURATION = 3000;  // 3 ثوانٍ نقاط الكتابة (...)
+    const MESSAGE_LIFESPAN = 6000; // 6 ثوانٍ بقاء مستقل للنص
+    const MAX_BUBBLES = 3;         // الحد الأقصى الافتراضي للفقاعات
 
-  const bubble = document.createElement('div');
-  bubble.className = `chat-bubble ${sender}`;
-  bubble.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
-  chatOverlay.appendChild(bubble);
+    // =========================================================
+    // 3. دوال مساعدة للحصول على الحالة الحالية والتالية
+    // =========================================================
+    function getCurrentPeriodName() {
+        return periodOrder[currentPeriodIndex];
+    }
 
-  requestAnimationFrame(() => {
-    bubble.classList.add('visible');
-  });
+    function getCurrentPlaylist() {
+        return playlists[getCurrentPeriodName()];
+    }
 
-  // مدة ظهور النقاط الثلاث (...) قبل كل رسالة: 3 ثوانٍ بالضبط
-  await wait(3000);
+    function getNextStep(periodIdx, videoIdx) {
+        const periodName = periodOrder[periodIdx];
+        const list = playlists[periodName].videos;
 
-  // استبدال النقاط بالنص الفعلي
-  bubble.textContent = text;
+        if (videoIdx + 1 < list.length) {
+            return { periodIdx, videoIdx: videoIdx + 1 };
+        }
 
-  // بدء المؤقت المستقل لهذه الرسالة وحدها: تختفي بعد 6 ثوانٍ من ظهور نصّها
-  bubble.hideTimer = setTimeout(() => {
-    dismissBubble(bubble);
-  }, 6000);
-}
+        // الانتقال للفترة التالية التي تحتوي على فيديوهات
+        let nextP = (periodIdx + 1) % periodOrder.length;
+        while (playlists[periodOrder[nextP]].videos.length === 0) {
+            nextP = (nextP + 1) % periodOrder.length;
+        }
+        return { periodIdx: nextP, videoIdx: 0 };
+    }
 
-// تشغيل تسلسل محادثة كاملة
-async function playConversationSequence(messages) {
-  if (isConversationRunning) return;
-  isConversationRunning = true;
+    // =========================================================
+    // 4. نظام فقاعات المحادثة (iMessage Engine)
+    // =========================================================
+    function enforceBubbleLimit(allowStack) {
+        if (allowStack) return; // استثناء المحادثة الثالثة: لا حذف بسبب التراكم
 
-  for (let i = 0; i < messages.length; i++) {
-    const msg = messages[i];
-    await showSingleMessage(msg.sender, msg.text);
-  }
+        const bubbles = chatContainer.querySelectorAll(".chat-bubble:not(.fade-out)");
+        if (bubbles.length >= MAX_BUBBLES) {
+            const oldest = bubbles[0];
+            removeBubble(oldest);
+        }
+    }
 
-  isConversationRunning = false;
-}
+    function removeBubble(bubble) {
+        if (!bubble || bubble.classList.contains("fade-out")) return;
+        bubble.classList.add("fade-out");
+        setTimeout(() => {
+            if (bubble.parentNode) {
+                bubble.parentNode.removeChild(bubble);
+            }
+        }, 400);
+    }
 
-// التحقق من رقم الفيديو لتشغيل المحادثات المخصصة
-function checkVideoConversations(index) {
-  // الفيديو الأول المسمى 115.mp4 يقع في الترتيب index === 12
-  if (index === 12) {
-    playConversationSequence([
-      { sender: 'character', text: 'n3ast' },
-      { sender: 'character', text: 'bon8' }
-    ]);
-  }
-}
+    function spawnMessage(msgObj, skipTyping = false) {
+        enforceBubbleLimit(msgObj.allowStack);
 
-// ==========================================
-// محرك التبديل بين الفيديوهات
-// ==========================================
+        const bubble = document.createElement("div");
+        bubble.classList.add("chat-bubble", msgObj.sender === "blue" ? "blue" : "gray");
 
-function playVideo(videoSrc, index) {
-  const currentVid = activeVideoTag === 'A' ? videoA : videoB;
-  const nextVid    = activeVideoTag === 'A' ? videoB : videoA;
+        if (skipTyping) {
+            bubble.textContent = msgObj.text;
+            chatContainer.appendChild(bubble);
+            setTimeout(() => removeBubble(bubble), MESSAGE_LIFESPAN);
+            return;
+        }
 
-  nextVid.src = videoSrc;
-  nextVid.load();
+        // مرحلة النقاط الثلاث (...) لمدة 3 ثوانٍ
+        bubble.innerHTML = `<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>`;
+        chatContainer.appendChild(bubble);
 
-  nextVid.oncanplaythrough = () => {
-    nextVid.play();
-    nextVid.classList.add('active');
-    currentVid.classList.remove('active');
-    activeVideoTag = activeVideoTag === 'A' ? 'B' : 'A';
-    nextVid.oncanplaythrough = null;
+        // كشف النص الفعلي بعد 3 ثوانٍ وبدء مؤقت البقاء المستقل (6 ثوانٍ)
+        setTimeout(() => {
+            bubble.textContent = msgObj.text;
+            setTimeout(() => {
+                removeBubble(bubble);
+            }, MESSAGE_LIFESPAN);
+        }, TYPING_DURATION);
+    }
 
-    checkVideoConversations(index);
-  };
-}
+    function triggerSequence(messages, preTriggered = false) {
+        if (!messages || messages.length === 0) return;
 
-function handleVideoEnded() {
-  currentVideoIndex = (currentVideoIndex + 1) % nightVideos.length;
-  playVideo(nightVideos[currentVideoIndex], currentVideoIndex);
-}
+        messages.forEach((msg, i) => {
+            const delay = i * (TYPING_DURATION + 400);
+            setTimeout(() => {
+                // إذا أُطلقت النقاط مسبقاً قبل 3 ثوانٍ، نكشف النص مباشرة عند بداية الفيديو
+                spawnMessage(msg, false);
+            }, delay);
+        });
+    }
 
-videoA.addEventListener('ended', handleVideoEnded);
-videoB.addEventListener('ended', handleVideoEnded);
+    // =========================================================
+    // 5. محرك المزامنة الزمنية للفيديو (Pre-Trigger & Playback)
+    // =========================================================
+    function preloadNextVideo() {
+        const next = getNextStep(currentPeriodIndex, currentVideoIndex);
+        const nextPlaylist = playlists[periodOrder[next.periodIdx]];
+        const nextSrc = nextPlaylist.folder + nextPlaylist.videos[next.videoIdx];
 
-window.addEventListener('DOMContentLoaded', () => {
-  playVideo(nightVideos[0], 0);
+        if (!standbyVideo.src.endsWith(nextSrc)) {
+            standbyVideo.src = nextSrc;
+            standbyVideo.load();
+        }
+    }
+
+    function handleTimeUpdate() {
+        const vid = activeVideo;
+        if (!vid.duration || isNaN(vid.duration)) return;
+
+        const remaining = vid.duration - vid.currentTime;
+        const next = getNextStep(currentPeriodIndex, currentVideoIndex);
+        const nextPeriodName = periodOrder[next.periodIdx];
+        const nextKey = `${nextPeriodName}_${next.videoIdx}`;
+        const nextTriggers = playlists[nextPeriodName].triggers[next.videoIdx];
+
+        // إطلاق مؤشر الكتابة (...) قبل نهاية الفيديو الحالي بـ 3 ثوانٍ
+        // لكي ينكشف النص بالضبط عند الثانية 0.0 من الفيديو التالي
+        if (nextTriggers && remaining <= 3.0 && !firedPreTriggers.has(nextKey)) {
+            firedPreTriggers.add(nextKey);
+            triggerSequence(nextTriggers, true);
+        }
+    }
+
+    function playVideoAt(periodIdx, videoIdx, isFirstStart = false) {
+        currentPeriodIndex = periodIdx;
+        currentVideoIndex = videoIdx;
+
+        const periodName = getCurrentPeriodName();
+        const playlist = getCurrentPlaylist();
+        const currentKey = `${periodName}_${videoIdx}`;
+        const videoSrc = playlist.folder + playlist.videos[videoIdx];
+
+        // تنظيف سجلات الدورة السابقة عند العودة للبداية
+        if (periodIdx === 0 && videoIdx === 0 && !isFirstStart) {
+            firedPreTriggers.clear();
+            firedExactTriggers.clear();
+        }
+
+        if (isFirstStart) {
+            activeVideo.src = videoSrc;
+            activeVideo.classList.add("active");
+            activeVideo.play().catch(() => {});
+        } else {
+            // تبديل حاد ونظيف بين المشغلين
+            standbyVideo.classList.add("active");
+            activeVideo.classList.remove("active");
+            activeVideo.pause();
+
+            const temp = activeVideo;
+            activeVideo = standbyVideo;
+            standbyVideo = temp;
+
+            activeVideo.play().catch(() => {});
+        }
+
+        // خطة احتياطية: إذا لم يتم إطلاق النقاط مسبقاً (مثلاً أول فيديو أو فيديو سابق قصير جداً)
+        const currentTriggers = playlist.triggers[videoIdx];
+        if (currentTriggers && !firedPreTriggers.has(currentKey) && !firedExactTriggers.has(currentKey)) {
+            firedExactTriggers.add(currentKey);
+            triggerSequence(currentTriggers, false);
+        }
+
+        // تجهيز الفيديو التالي في الخلفية
+        preloadNextVideo();
+    }
+
+    // ربط مستمعي الأحداث بكلا المشغلين
+    [videoA, videoB].forEach((vid) => {
+        vid.addEventListener("timeupdate", () => {
+            if (vid === activeVideo) {
+                handleTimeUpdate();
+            }
+        });
+
+        vid.addEventListener("ended", () => {
+            if (vid === activeVideo) {
+                const next = getNextStep(currentPeriodIndex, currentVideoIndex);
+                playVideoAt(next.periodIdx, next.videoIdx, false);
+            }
+        });
+    });
+
+    // بدء التشغيل الأولي
+    playVideoAt(0, 0, true);
 });
-
-// ==========================================
-// العداد التنازلي لعيد الميلاد (2 مارس)
-// ==========================================
-const BIRTHDAY_MONTH = 2; // مارس
-const BIRTHDAY_DAY = 2;   // 2 مارس
-
-function getNextBirthdayDate() {
-  const now = new Date();
-  let targetYear = now.getFullYear();
-  let nextBirthday = new Date(targetYear, BIRTHDAY_MONTH, BIRTHDAY_DAY, 0, 0, 0);
-
-  if (now > nextBirthday) {
-    nextBirthday = new Date(targetYear + 1, BIRTHDAY_MONTH, BIRTHDAY_DAY, 0, 0, 0);
-  }
-  return nextBirthday;
-}
-
-function updateCountdown() {
-  const now = new Date();
-  const targetDate = getNextBirthdayDate();
-  const diff = targetDate - now;
-
-  if (diff <= 0) {
-    document.getElementById("timer").innerText = "عيد ميلاد سعيد! 🎉";
-    return;
-  }
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((diff / 1000 / 60) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-
-  const timerElement = document.getElementById('timer');
-  if (timerElement) {
-    const d = String(days).padStart(2, '0');
-    const h = String(hours).padStart(2, '0');
-    const m = String(minutes).padStart(2, '0');
-    const s = String(seconds).padStart(2, '0');
-    timerElement.innerText = `${d} يوم : ${h} ساعة : ${m} دقيقة : ${s} ثانية`;
-  }
-}
-
-setInterval(updateCountdown, 1000);
-updateCountdown();
