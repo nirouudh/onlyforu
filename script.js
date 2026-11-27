@@ -137,13 +137,16 @@ const eveningVideos = [
 ];
 
 // ==========================================
-// قائمة أغاني المساء العشوائية (ضع أسماء ملفاتك هنا)
+// قائمة أغاني المساء العشوائية (7 أغاني)
 // ==========================================
 const eveningSongs = [
-  'assets/audio/song1.mp3',
-  'assets/audio/song2.mp3',
-  'assets/audio/song3.mp3',
-  'assets/audio/song4.mp3'
+  'assets/audio/1.mp3',
+  'assets/audio/2.mp3',
+  'assets/audio/3.mp3',
+  'assets/audio/4.mp3',
+  'assets/audio/5.mp3',
+  'assets/audio/6.mp3',
+  'assets/audio/7.mp3'
 ];
 
 // إعدادات توقيت وتلاشي موسيقى المساء
