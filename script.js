@@ -161,7 +161,7 @@ const phases = [
   { name: 'evening', videos: eveningVideos }
 ];
 
-// محادثات الصباح (مربوطة بالفهرس الذي يظهر النص مع بدايته)
+// محادثات الصباح
 const morningTriggers = {
   // المحادثة الأولى
   3:  { sender: 'user',      text: 'wech raki diri ?' },
@@ -191,9 +191,92 @@ let preTriggeredKeys = new Set();
 let exactTriggeredKeys = new Set();
 let preloadedSrc = '';
 let isTransitioning = false;
+let hasExperienceStarted = false;
 
 const videoA = document.getElementById('video-a');
 const videoB = document.getElementById('video-b');
+
+// ==========================================
+// نظام السبورتين الترحيبيتين (Onboarding Screens)
+// ==========================================
+const introSlides = [
+  {
+    gif: 'assets/images/intro1.gif',
+    text: 'had site is a birthday gift l douaa\nyeb9a ya7sb ch3al ba9i l birthday kol 3am , ki yji hadak nhar tbdl site w yji l cadeau tae sa7'
+  },
+  {
+    gif: 'assets/images/intro2.gif',
+    text: 'hiya sa7 site تافه w mat9drch tsemih gift , bsh yeb9a spécial\npsq mahmha medoulk mn cadeau maknch li ra7 ykhmm wa7ed bch ydirlh site 😌🤫'
+  }
+];
+
+let currentIntroStep = 0;
+let isAudioUnlocked = false;
+const introBackdrop = document.getElementById('intro-backdrop');
+const introCard     = document.getElementById('intro-card');
+const boardGif      = document.getElementById('board-gif');
+const boardText     = document.getElementById('board-text');
+const introOkBtn    = document.getElementById('intro-ok-btn');
+
+// التحميل المسبق للصورة الثانية حتى تظهر فوراً دون تأخير
+const preloadSecondGif = new Image();
+preloadSecondGif.src = introSlides[1].gif;
+
+// تهيئة النص الأول عند التحميل
+if (boardText) {
+  boardText.textContent = introSlides[0].text;
+}
+
+// فتح قفل الصوت في متصفحات الهواتف عند الضغط على زر ok
+function unlockAudioForMobile() {
+  if (isAudioUnlocked || !eveningAudio) return;
+  isAudioUnlocked = true;
+
+  const originalSrc = eveningAudio.getAttribute('src');
+  eveningAudio.src = eveningSongs[0];
+  eveningAudio.volume = 0;
+  eveningAudio.muted = true;
+
+  const p = eveningAudio.play();
+  if (p !== undefined) {
+    p.then(() => {
+      eveningAudio.pause();
+      eveningAudio.currentTime = 0;
+      eveningAudio.muted = isAudioMuted;
+      if (!originalSrc) eveningAudio.removeAttribute('src');
+    }).catch(() => {
+      eveningAudio.muted = isAudioMuted;
+    });
+  }
+}
+
+// الانتقال من السبورة الأولى -> الثانية -> بدء الموقع
+if (introOkBtn) {
+  introOkBtn.addEventListener('click', () => {
+    unlockAudioForMobile();
+
+    if (currentIntroStep === 0) {
+      currentIntroStep = 1;
+      introCard.classList.add('switching');
+
+      setTimeout(() => {
+        boardGif.src = introSlides[1].gif;
+        boardText.textContent = introSlides[1].text;
+        introCard.classList.remove('switching');
+      }, 280);
+    } else if (currentIntroStep === 1 && !hasExperienceStarted) {
+      hasExperienceStarted = true;
+      introBackdrop.classList.add('hidden');
+
+      setTimeout(() => {
+        introBackdrop.style.display = 'none';
+      }, 560);
+
+      // تشغيل الفيديو الأول في الليل من الصفر فور اختفاء الضباب
+      startMainVideoExperience();
+    }
+  });
+}
 
 // ==========================================
 // محرك موسيقى المساء المتزامن (Fade-In / Fade-Out / Random)
@@ -206,7 +289,6 @@ let isFadingOut = false;
 let audioFadeInterval = null;
 let lastPlayedSongIndex = -1;
 
-// زر كتم/تشغيل الصوت
 if (audioToggleBtn) {
   audioToggleBtn.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -216,7 +298,6 @@ if (audioToggleBtn) {
   });
 }
 
-// فتح قفل الصوت في متصفحات الهواتف عند أول لمسة للشاشة
 function unlockAudioOnInteraction() {
   if (isMusicSessionActive && eveningAudio.paused && !isAudioMuted) {
     eveningAudio.play().catch(() => {});
@@ -225,7 +306,6 @@ function unlockAudioOnInteraction() {
 document.addEventListener('touchstart', unlockAudioOnInteraction, { passive: true });
 document.addEventListener('click', unlockAudioOnInteraction, { passive: true });
 
-// اختيار أغنية عشوائية دون تكرار الأغنية السابقة مباشرة
 function pickRandomSong() {
   if (!eveningSongs || eveningSongs.length === 0) return null;
   if (eveningSongs.length === 1) return eveningSongs[0];
@@ -239,7 +319,6 @@ function pickRandomSong() {
   return eveningSongs[randomIndex];
 }
 
-// تلاشي تصاعدي للصوت من 0 إلى 1 خلال 6 ثوانٍ
 function fadeInMusic(durationSec = FADE_DURATION_SEC) {
   clearInterval(audioFadeInterval);
   isFadingOut = false;
@@ -259,7 +338,6 @@ function fadeInMusic(durationSec = FADE_DURATION_SEC) {
   }, stepMs);
 }
 
-// تلاشي تنازلي للصوت من المستوى الحالي إلى 0 خلال 6 ثوانٍ
 function fadeOutMusic(durationSec = FADE_DURATION_SEC) {
   if (isFadingOut || !isMusicSessionActive) return;
   isFadingOut = true;
@@ -284,7 +362,6 @@ function fadeOutMusic(durationSec = FADE_DURATION_SEC) {
   }, stepMs);
 }
 
-// إيقاف وتصفير الموسيقى تماماً
 function stopEveningMusicImmediate() {
   clearInterval(audioFadeInterval);
   isMusicSessionActive = false;
@@ -294,7 +371,6 @@ function stopEveningMusicImmediate() {
   eveningAudio.currentTime = 0;
 }
 
-// بدء جلسة موسيقى المساء عند الفيديو 6.mp4
 function startEveningMusicSession() {
   if (isMusicSessionActive) return;
   const songSrc = pickRandomSong();
@@ -312,7 +388,6 @@ function startEveningMusicSession() {
       fadeInMusic(FADE_DURATION_SEC);
     })
     .catch(() => {
-      // في حال حظر المتصفح الصوت قبل لمس الشاشة، تبقى الجلسة نشطة وتعمل فور أول لمسة
       fadeInMusic(FADE_DURATION_SEC);
     });
 }
@@ -325,7 +400,6 @@ let isConversationRunning = false;
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// دالة إخفاء فقاعة واحدة بنعومة وإزالتها من الشاشة
 function dismissBubble(bubble) {
   if (!bubble || !bubble.parentNode || bubble.classList.contains('fade-out')) return;
   
@@ -340,7 +414,6 @@ function dismissBubble(bubble) {
   }, 450);
 }
 
-// شبكة الأمان البصرية: منع تجاوز 3 فقاعات في الأعلى (مع احترام استثناء المحادثة 3)
 function enforceMaxVisibleBubbles(maxCount = 3, allowStack = false) {
   if (allowStack) return;
 
@@ -354,7 +427,6 @@ function enforceMaxVisibleBubbles(maxCount = 3, allowStack = false) {
   }
 }
 
-// عرض رسالة واحدة بمؤقت مستقل خاص بها
 async function showSingleMessage(sender, text, allowStack = false) {
   enforceMaxVisibleBubbles(3, allowStack);
 
@@ -367,19 +439,15 @@ async function showSingleMessage(sender, text, allowStack = false) {
     bubble.classList.add('visible');
   });
 
-  // مدة ظهور النقاط الثلاث (...) قبل كل رسالة: 3 ثوانٍ بالضبط
   await wait(3000);
 
-  // استبدال النقاط بالنص الفعلي
   bubble.textContent = text;
 
-  // بدء المؤقت المستقل لهذه الرسالة وحدها: تختفي بعد 6 ثوانٍ من ظهور نصّها
   bubble.hideTimer = setTimeout(() => {
     dismissBubble(bubble);
   }, 6000);
 }
 
-// تشغيل تسلسل محادثة كاملة (كما في الليل)
 async function playConversationSequence(messages) {
   if (isConversationRunning) return;
   isConversationRunning = true;
@@ -392,7 +460,6 @@ async function playConversationSequence(messages) {
   isConversationRunning = false;
 }
 
-// حساب الخطوة التالية في الدورة المستمرة
 function getNextStep(pIndex, vIndex) {
   const currentList = phases[pIndex].videos;
   if (vIndex + 1 < currentList.length) {
@@ -406,11 +473,9 @@ function getNextStep(pIndex, vIndex) {
   return { phaseIndex: nextP, videoIndex: 0 };
 }
 
-// التحقق من المحادثات والموسيقى عند بدء الفيديو
 function checkVideoConversations(phaseName, index) {
   const key = `${phaseName}_${index}`;
 
-  // محادثة الليل
   if (phaseName === 'night' && index === 12) {
     playConversationSequence([
       { sender: 'character', text: 'n3ast' },
@@ -418,7 +483,6 @@ function checkVideoConversations(phaseName, index) {
     ]);
   }
 
-  // محادثات الصباح
   if (phaseName === 'morning' && morningTriggers[index]) {
     if (!preTriggeredKeys.has(key) && !exactTriggeredKeys.has(key)) {
       exactTriggeredKeys.add(key);
@@ -427,16 +491,13 @@ function checkVideoConversations(phaseName, index) {
     }
   }
 
-  // إدارة موسيقى المساء
   if (phaseName === 'evening') {
     if (index === EVENING_MUSIC_START_INDEX) {
       startEveningMusicSession();
     } else if (index > EVENING_MUSIC_END_INDEX && isMusicSessionActive) {
-      // شبكة أمان لإيقاف الموسيقى تماماً بمجرد تجاوز الفيديو 17.mp4
       stopEveningMusicImmediate();
     }
   } else if (isMusicSessionActive) {
-    // إيقاف الموسيقى إذا انتقلت الدورة لفترة أخرى
     stopEveningMusicImmediate();
   }
 }
@@ -496,7 +557,6 @@ function playVideo(videoSrc, phaseIndex, videoIndex) {
   const nextVid    = activeVideoTag === 'A' ? videoB : videoA;
   const phaseName  = phases[phaseIndex].name;
 
-  // تصفير سجلات الدورة عند العودة لبداية الليل
   if (phaseIndex === 0 && videoIndex === 0) {
     preTriggeredKeys.clear();
     exactTriggeredKeys.clear();
@@ -533,10 +593,8 @@ function playVideo(videoSrc, phaseIndex, videoIndex) {
   }
 }
 
-// مراقبة الوقت المتبقي من الفيديو الحالي:
-// 1. لإطلاق النقاط الثلاث قبل بداية فيديو الصباح التالي بـ 3 ثوانٍ
-// 2. لبدء التلاشي التنازلي للموسيقى قبل نهاية فيديو المساء 17.mp4 بـ 6 ثوانٍ
 function handleVideoTimeUpdate(event) {
+  if (!hasExperienceStarted) return;
   const vid = event.target;
   const activeVid = activeVideoTag === 'A' ? videoA : videoB;
   if (vid !== activeVid || !vid.duration || isNaN(vid.duration)) return;
@@ -544,7 +602,6 @@ function handleVideoTimeUpdate(event) {
   const remaining = vid.duration - vid.currentTime;
   const currentPhaseName = phases[currentPhaseIndex].name;
 
-  // مراقبة التلاشي التنازلي للموسيقى في الفيديو 17.mp4 (الفهرس 31)
   if (
     currentPhaseName === 'evening' &&
     currentVideoIndex === EVENING_MUSIC_END_INDEX &&
@@ -557,7 +614,6 @@ function handleVideoTimeUpdate(event) {
     }
   }
 
-  // مراقبة محادثات الصباح المسبقة
   const next = getNextStep(currentPhaseIndex, currentVideoIndex);
   const nextPhaseName = phases[next.phaseIndex].name;
   const nextKey = `${nextPhaseName}_${next.videoIndex}`;
@@ -572,7 +628,7 @@ function handleVideoTimeUpdate(event) {
 }
 
 function handleVideoEnded() {
-  if (isTransitioning) return;
+  if (!hasExperienceStarted || isTransitioning) return;
   const next = getNextStep(currentPhaseIndex, currentVideoIndex);
   currentPhaseIndex = next.phaseIndex;
   currentVideoIndex = next.videoIndex;
@@ -586,8 +642,39 @@ videoB.addEventListener('timeupdate', handleVideoTimeUpdate);
 videoA.addEventListener('ended', handleVideoEnded);
 videoB.addEventListener('ended', handleVideoEnded);
 
+// تجميد الإطار الأول من الفيديو الأول كصورة خلفية تحت الضباب عند تحميل الصفحة
+function prepareFrozenBackgroundFrame() {
+  const firstSrc = phases[0].videos[0];
+  videoA.src = firstSrc;
+  videoA.load();
+  videoA.addEventListener('loadeddata', () => {
+    if (!hasExperienceStarted) {
+      videoA.currentTime = 0;
+      videoA.pause();
+    }
+  }, { once: true });
+}
+
+// بدء التجربة الفعلية بعد الضغط على زر ok الثاني
+function startMainVideoExperience() {
+  const firstSrc = phases[0].videos[0];
+  videoA.currentTime = 0;
+  videoA.play()
+    .then(() => {
+      checkVideoConversations('night', 0);
+      preloadNextVideo();
+    })
+    .catch(() => {
+      videoA.muted = true;
+      videoA.play().finally(() => {
+        checkVideoConversations('night', 0);
+        preloadNextVideo();
+      });
+    });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  playVideo(phases[currentPhaseIndex].videos[currentVideoIndex], currentPhaseIndex, currentVideoIndex);
+  prepareFrozenBackgroundFrame();
 });
 
 // ==========================================
