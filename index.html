@@ -92,15 +92,15 @@
       top: 4%;
       left: 0;
       width: 100%;
-      height: 35%; /* الثلث العلوي فقط فوق السماء والبحيرة */
+      height: 35%;
       padding: 4px 10px;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
       gap: 6px;
-      z-index: 5; /* أعلى من الفيديوهات ومستقلة تماماً */
+      z-index: 5;
       pointer-events: none;
-      direction: ltr; /* اتجاه المحادثة الطبيعي يسار/يمين */
+      direction: ltr;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
@@ -130,7 +130,6 @@
       transition: opacity 0.45s ease, transform 0.45s ease;
     }
 
-    /* فقاعة الشخصية (رمادية على اليسار مع الذيل) */
     .chat-bubble.character {
       align-self: flex-start;
       background-color: #e5e5ea;
@@ -151,7 +150,6 @@
       clip-path: polygon(100% 0, 100% 100%, 0 100%);
     }
 
-    /* فقاعة المتحدث (زرقاء على اليمين مع الذيل) */
     .chat-bubble.user {
       align-self: flex-end;
       background-color: #007aff;
@@ -172,7 +170,6 @@
       clip-path: polygon(0 0, 0 100%, 100% 100%);
     }
 
-    /* مؤشر الكتابة ذو النقاط الثلاث (...) */
     .typing-dots {
       display: inline-flex;
       align-items: center;
@@ -268,16 +265,167 @@
       letter-spacing: 0.5px;
       color: #fff;
     }
+
+    /* ==========================================
+       طبقة الترحيب الضبابية والسبورتين (Onboarding)
+       ========================================== */
+    .intro-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      background: rgba(13, 13, 18, 0.58);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      opacity: 1;
+      transition: opacity 0.55s ease;
+    }
+
+    .intro-backdrop.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .intro-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: min(90vw, 410px);
+      gap: 14px;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      transition: opacity 0.32s ease, transform 0.32s ease;
+    }
+
+    .intro-card.switching {
+      opacity: 0;
+      transform: scale(0.96) translateY(6px);
+    }
+
+    .board-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .board-gif {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+      filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
+    }
+
+    /* صندوق الكتابة المضبوط بدقة داخل المساحة الخضراء للسبورة */
+    .board-text {
+      position: absolute;
+      top: 14.5%;
+      left: 10%;
+      width: 80%;
+      height: 54%;
+      padding: 6px 10px 14px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      direction: ltr;
+      unicode-bidi: plaintext;
+      color: #f8fafc;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(13px, 3.6vw, 17.5px);
+      font-weight: 600;
+      line-height: 1.5;
+      white-space: pre-line;
+      word-wrap: break-word;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+    }
+
+    /* زر ok المخصص */
+    .btn-success-morph {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      direction: ltr;
+      padding: 12px 34px;
+      border: none;
+      border-radius: 10px;
+      background: #4f46e5;
+      color: #eef2ff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+      transition: background 0.3s ease, padding 0.3s ease, transform 0.1s ease;
+    }
+
+    .btn-success-morph::after {
+      content: "✓";
+      display: inline-block;
+      width: 0;
+      margin-left: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateX(8px);
+      transition: width 0.3s ease, margin-left 0.3s ease, opacity 0.25s ease, transform 0.3s ease;
+    }
+
+    .btn-success-morph:hover,
+    .btn-success-morph:active {
+      background: #16a34a;
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+
+    .btn-success-morph:hover::after,
+    .btn-success-morph:active::after {
+      width: 1em;
+      margin-left: 8px;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .btn-success-morph:active {
+      background: #15803d;
+      transform: translateY(1px);
+    }
+
+    .btn-success-morph:focus-visible {
+      outline: 2px solid #4f46e5;
+      outline-offset: 3px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- طبقة الترحيب الضبابية (السبورة 1 ثم السبورة 2) -->
+  <div id="intro-backdrop" class="intro-backdrop">
+    <div id="intro-card" class="intro-card">
+      <div class="board-wrapper">
+        <img id="board-gif" class="board-gif" src="assets/images/intro1.gif" alt="Blackboard">
+        <div id="board-text" class="board-text"></div>
+      </div>
+      <button id="intro-ok-btn" class="btn-success-morph" type="button">ok</button>
+    </div>
+  </div>
 
   <!-- الإطار الخارجي الكبير (نافذة Paint) -->
   <div class="outer-frame">
     
     <!-- الإطار الداخلي المخصص للفيديوهات -->
     <div class="video-screen">
-      <video id="video-a" class="pixel-video active" autoplay muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
+      <video id="video-a" class="pixel-video active" muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
       <video id="video-b" class="pixel-video" muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
       
       <!-- حاوية فقاعات المحادثة في الثلث العلوي -->
@@ -303,6 +451,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=15"></script>
+  <script src="script.js?v=16"></script>
 </body>
 </html>
