@@ -226,6 +226,7 @@
     }
 
     .countdown-box {
+      position: relative;
       background: rgba(13, 13, 18, 0.9);
       padding: 6px 14px;
       border-radius: 10px;
@@ -233,10 +234,32 @@
       text-align: center;
     }
 
+    .countdown-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
     .countdown-title {
       font-size: 0.72rem;
-      margin-bottom: 2px;
       color: #ffb74d;
+    }
+
+    .audio-toggle-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 182, 193, 0.35);
+      color: #ffb74d;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      line-height: 1.2;
+    }
+
+    .audio-toggle-btn:active {
+      transform: scale(0.94);
     }
 
     .timer-display {
@@ -266,14 +289,20 @@
 
   </div>
 
+  <!-- عنصر الموسيقى المستقل لفترة المساء -->
+  <audio id="evening-audio" preload="auto" loop></audio>
+
   <!-- العداد التنازلي أسفل الإطار -->
   <div class="content-wrapper">
     <div class="countdown-box">
-      <div class="countdown-title">الوقت المتبقي لعيد الميلاد (2 مارس)</div>
+      <div class="countdown-header">
+        <div class="countdown-title">الوقت المتبقي لعيد الميلاد (2 مارس)</div>
+        <button id="audio-toggle" class="audio-toggle-btn" title="تفعيل/كتم الصوت">🔊</button>
+      </div>
       <div id="timer" class="timer-display">جاري التحميل...</div>
     </div>
   </div>
 
-  <script src="script.js?v=14"></script>
+  <script src="script.js?v=15"></script>
 </body>
 </html>
