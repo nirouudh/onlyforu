@@ -31,7 +31,6 @@
       font-family: 'Courier New', Courier, monospace;
     }
 
-    /* تكبير الإطار والفيديو معاً مع الحفاظ على التناسق التام وضمان مساحة العداد */
     .outer-frame {
       position: relative;
       height: 82dvh;
@@ -44,7 +43,6 @@
       transform: translateZ(0);
     }
 
-    /* شاشة الفيديو الداخلية */
     .video-screen {
       position: absolute;
       top: 11.5%;
@@ -59,7 +57,6 @@
       align-items: center;
     }
 
-    /* الفيديوهات مع تسريع المعالج الرسومي لمنع الوميض */
     .pixel-video {
       position: absolute;
       top: 0;
@@ -84,9 +81,7 @@
       z-index: 2;
     }
 
-    /* ==========================================
-       طبقة فقاعات المحادثة (iMessage Style)
-       ========================================== */
+    /* طبقة فقاعات المحادثة */
     .chat-overlay {
       position: absolute;
       top: 4%;
@@ -199,7 +194,7 @@
       30% { transform: translateY(-3px); opacity: 1; }
     }
 
-    /* صورة الإطار PNG */
+    /* صورة الإطار */
     .frame-overlay {
       position: absolute;
       top: 0;
@@ -212,7 +207,7 @@
       pointer-events: none;
     }
 
-    /* العداد التنازلي أسفل الإطار */
+    /* العداد التنازلي */
     .content-wrapper {
       margin-top: 10px;
       width: 100%;
@@ -266,9 +261,7 @@
       color: #fff;
     }
 
-    /* ==========================================
-       طبقة الترحيب الضبابية والسبورتين (Onboarding)
-       ========================================== */
+    /* شاشة الترحيب */
     .intro-backdrop {
       position: fixed;
       inset: 0;
@@ -325,7 +318,6 @@
       filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.55));
     }
 
-    /* صندوق الكتابة المضبوط بدقة داخل المساحة الخضراء للسبورة */
     .board-text {
       position: absolute;
       top: 14.5%;
@@ -350,7 +342,7 @@
       pointer-events: none;
     }
 
-    /* زر ok المخصص */
+    /* زر OK */
     .btn-success-morph {
       display: inline-flex;
       align-items: center;
@@ -409,7 +401,7 @@
 </head>
 <body>
 
-  <!-- طبقة الترحيب الضبابية (السبورة 1 ثم السبورة 2) -->
+  <!-- طبقة الترحيب -->
   <div id="intro-backdrop" class="intro-backdrop">
     <div id="intro-card" class="intro-card">
       <div class="board-wrapper">
@@ -420,27 +412,32 @@
     </div>
   </div>
 
-  <!-- الإطار الخارجي الكبير (نافذة Paint) -->
+  <!-- الإطار الخارجي -->
   <div class="outer-frame">
-    
-    <!-- الإطار الداخلي المخصص للفيديوهات -->
+
+    <!-- شاشة الفيديو -->
     <div class="video-screen">
       <video id="video-a" class="pixel-video active" muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
       <video id="video-b" class="pixel-video" muted playsinline webkit-playsinline preload="auto" disablePictureInPicture></video>
-      
-      <!-- حاوية فقاعات المحادثة في الثلث العلوي -->
+
+      <!-- فقاعات المحادثة -->
       <div id="chat-overlay" class="chat-overlay"></div>
     </div>
 
-    <!-- صورة الإطار المفرغة (PNG) -->
+    <!-- صورة الإطار -->
     <img src="assets/images/frame.png" alt="Frame" class="frame-overlay">
 
   </div>
 
-  <!-- عنصر الموسيقى المستقل لفترة المساء -->
+  <!-- صوت المساء الأصلي -->
   <audio id="evening-audio" preload="auto" loop></audio>
 
-  <!-- العداد التنازلي أسفل الإطار -->
+  <!-- الأصوات الجديدة -->
+  <audio id="night-fire-audio" src="assets/audio/fire.mp3" preload="auto" loop></audio>
+  <audio id="morning-birds-audio" src="assets/audio/birds.mp3" preload="auto" loop></audio>
+  <audio id="typing-audio" src="assets/audio/typing.mp3" preload="auto" loop></audio>
+
+  <!-- العداد التنازلي -->
   <div class="content-wrapper">
     <div class="countdown-box">
       <div class="countdown-header">
@@ -451,6 +448,6 @@
     </div>
   </div>
 
-  <script src="script.js?v=16"></script>
+  <script src="script.js?v=17"></script>
 </body>
 </html>
