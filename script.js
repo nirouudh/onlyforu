@@ -283,24 +283,100 @@ if (introOkBtn) {
 // ==========================================
 const eveningAudio = document.getElementById('evening-audio');
 const audioToggleBtn = document.getElementById('audio-toggle');
+const nightFireAudio = document.getElementById('night-fire-audio');
+const morningBirdsAudio = document.getElementById('morning-birds-audio');
+const typingAudio = document.getElementById('typing-audio');
 let isAudioMuted = false;
 let isMusicSessionActive = false;
 let isFadingOut = false;
 let audioFadeInterval = null;
 let lastPlayedSongIndex = -1;
+let typingSoundUsers = 0;
+const activeMessageAudios = new Set();
+
+// تطبيق زر الصوت نفسه على الموسيقى وأصوات الأجواء والكتابة والرسائل.
+function applyMuteToAllAudio() {
+  [eveningAudio, nightFireAudio, morningBirdsAudio, typingAudio].forEach((audio) => {
+    if (audio) audio.muted = isAudioMuted;
+  });
+  activeMessageAudios.forEach((audio) => {
+    audio.muted = isAudioMuted;
+  });
+}
 
 if (audioToggleBtn) {
   audioToggleBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     isAudioMuted = !isAudioMuted;
-    eveningAudio.muted = isAudioMuted;
+    applyMuteToAllAudio();
     audioToggleBtn.textContent = isAudioMuted ? '🔇' : '🔊';
   });
+}
+
+// صوت الأجواء: نار في الليل، وعصافير في الصباح. موسيقى المساء الحالية لا تتغير.
+function setAmbientAudioForPhase(phaseName) {
+  const targetAudio = phaseName === 'night'
+    ? nightFireAudio
+    : phaseName === 'morning'
+      ? morningBirdsAudio
+      : null;
+
+  [nightFireAudio, morningBirdsAudio].forEach((audio) => {
+    if (!audio || audio === targetAudio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  });
+
+  if (targetAudio && hasExperienceStarted) {
+    targetAudio.loop = true;
+    targetAudio.muted = isAudioMuted;
+    if (targetAudio.paused) targetAudio.play().catch(() => {});
+  }
+}
+
+// صوت الكتابة يعمل طوال ظهور النقاط الثلاث، مهما كان طول ملف الصوت.
+function startTypingSound() {
+  typingSoundUsers += 1;
+  if (!typingAudio) return;
+  typingAudio.loop = true;
+  typingAudio.muted = isAudioMuted;
+  if (typingSoundUsers === 1) {
+    typingAudio.currentTime = 0;
+    typingAudio.play().catch(() => {});
+  }
+}
+
+function stopTypingSound() {
+  typingSoundUsers = Math.max(0, typingSoundUsers - 1);
+  if (typingSoundUsers === 0 && typingAudio) {
+    typingAudio.pause();
+    typingAudio.currentTime = 0;
+  }
+}
+
+// لكل رسالة مشغّل مستقل، لذلك يمكن أن تتداخل الأصوات إذا ظهرت رسائل متقاربة.
+function playMessageSound() {
+  const audio = new Audio('assets/audio/message.mp3');
+  audio.preload = 'auto';
+  audio.muted = isAudioMuted;
+  activeMessageAudios.add(audio);
+
+  const cleanup = () => {
+    activeMessageAudios.delete(audio);
+    audio.removeEventListener('ended', cleanup);
+    audio.removeEventListener('error', cleanup);
+  };
+  audio.addEventListener('ended', cleanup);
+  audio.addEventListener('error', cleanup);
+  audio.play().catch(cleanup);
 }
 
 function unlockAudioOnInteraction() {
   if (isMusicSessionActive && eveningAudio.paused && !isAudioMuted) {
     eveningAudio.play().catch(() => {});
+  }
+  if (hasExperienceStarted) {
+    setAmbientAudioForPhase(phases[currentPhaseIndex].name);
   }
 }
 document.addEventListener('touchstart', unlockAudioOnInteraction, { passive: true });
@@ -429,6 +505,8 @@ function enforceMaxVisibleBubbles(maxCount = 3, allowStack = false) {
 
 async function showSingleMessage(sender, text, allowStack = false) {
   enforceMaxVisibleBubbles(3, allowStack);
+  playMessageSound();
+  startTypingSound();
 
   const bubble = document.createElement('div');
   bubble.className = `chat-bubble ${sender}`;
@@ -440,6 +518,7 @@ async function showSingleMessage(sender, text, allowStack = false) {
   });
 
   await wait(3000);
+  stopTypingSound();
 
   bubble.textContent = text;
 
@@ -540,6 +619,7 @@ function completeVisualSwap(currentVid, nextVid, phaseName, videoIndex) {
       isTransitioning = false;
 
       checkVideoConversations(phaseName, videoIndex);
+      setAmbientAudioForPhase(phaseName);
 
       setTimeout(() => {
         cleanupHiddenVideo(currentVid);
@@ -661,12 +741,14 @@ function startMainVideoExperience() {
   videoA.currentTime = 0;
   videoA.play()
     .then(() => {
+      setAmbientAudioForPhase('night');
       checkVideoConversations('night', 0);
       preloadNextVideo();
     })
     .catch(() => {
       videoA.muted = true;
       videoA.play().finally(() => {
+        setAmbientAudioForPhase('night');
         checkVideoConversations('night', 0);
         preloadNextVideo();
       });
